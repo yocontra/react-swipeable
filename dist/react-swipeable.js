@@ -2,12 +2,15 @@
 'use strict';
 
 var ReactCompositeComponent = require('react/lib/ReactCompositeComponent');
-var DOM = require('react/lib/ReactDOM');
 var PropTypes = require('react/lib/ReactPropTypes');
-
+var merge = require('react/lib/merge');
 var Draggable = require('react-draggable');
 
-var rotate = function(deg) {
+function getRotationAngle(v, max, angle) {
+  return angle * (v / max);
+}
+
+function rotate(deg) {
   var v = 'rotate('+deg+'deg)';
   return {
     transform: v,
@@ -16,9 +19,17 @@ var rotate = function(deg) {
     oTransform: v,
     msTransform: v
   };
+}
+
+var defaultStyle = {
+  position: 'relative',
+  userSelect: 'none',
+  webkitUserSelect: 'none',
+  mozUserSelect: 'none',
+  oUserSelect: 'none',
+  msUserSelect: 'none'
 };
 
-// TODO: curb rotation
 // TODO: rotate back if stopped and didnt swipe right or left
 
 var Swipeable = ReactCompositeComponent.createClass({
@@ -35,52 +46,73 @@ var Swipeable = ReactCompositeComponent.createClass({
 
   getDefaultProps: function(){
     return {
-      rotationAngle: 10
+      rotationAngle: 20
     };
   },
 
   getInitialState: function(){
     return {
-      rotation: 0
+      rotation: 0,
+      swiped: null
     };
   },
 
   componentDidMount: function(){
     var el = this.getDOMNode();
-    this.setState({
-      breakpoint: el.clientWidth / 2
-    });
+    this.setState({breakpoint: el.clientWidth/2});
   },
 
   handleDrag: function(event, ui){
-    if (ui.position.left >= this.state.breakpoint) {
-      this.props.onSwipeRight();
-    } else if (ui.position.left <= -this.state.breakpoint) {
-      this.props.onSwipeLeft();
+    if (this.state.swiped) {
+      return;
     }
-    this.setState({
-      rotation: ui.position.left / this.props.rotationAngle
-    });
+
+    var pos = ui.position.left;
+    var rotateAngle = getRotationAngle(pos, this.state.breakpoint, this.props.rotationAngle);
+    this.setState({rotation: rotateAngle});
+
+    if (ui.position.left >= this.state.breakpoint) {
+      this.setState({swiped: 'right'}, this.props.onSwipeRight);
+    } else if (ui.position.left <= -this.state.breakpoint) {
+      this.setState({swiped: 'left'}, this.props.onSwipeLeft);
+    }
 
     if (this.props.onDrag) {
       this.props.onDrag(event, ui);
     }
+  },
 
-    console.log(ui.position.left);
+  handleDragStop: function(event, ui){
+    if (ui.position.left !== this.state.breakpoint &&
+      ui.position.left !== -this.state.breakpoint) {
+      this.reset();
+    }
 
+    if (this.props.onDragStop) {
+      this.props.onDragStop(event, ui);
+    }
+  },
+
+  reset: function(){
+    this.setState({rotation: 0});
+    this.refs.draggable.reset();
   },
 
   render: function(){
+    var style = merge(rotate(this.state.rotation), defaultStyle);
+
     var draggable = Draggable({
+      ref: 'draggable',
       axis: 'x',
       onStart: this.props.onDragStart,
-      onStop: this.props.onDragStop,
+      onStop: this.handleDragStop,
       onDrag: this.handleDrag,
       zIndex: this.props.zIndex,
       ranges: {
         x: [-this.state.breakpoint, this.state.breakpoint]
       },
-      style: rotate(this.state.rotation)
+      style: style,
+      className: this.props.className
     }, this.props.children);
 
     return draggable;
@@ -88,7 +120,7 @@ var Swipeable = ReactCompositeComponent.createClass({
 });
 
 module.exports = Swipeable;
-},{"react-draggable":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/index.js","react/lib/ReactCompositeComponent":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactCompositeComponent.js","react/lib/ReactDOM":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactDOM.js","react/lib/ReactPropTypes":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactPropTypes.js"}],"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js":[function(require,module,exports){
+},{"react-draggable":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/index.js","react/lib/ReactCompositeComponent":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactCompositeComponent.js","react/lib/ReactPropTypes":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactPropTypes.js","react/lib/merge":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/merge.js"}],"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js":[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -610,6 +642,7 @@ module.exports = React.createClass({
 		if (!canDragY(this)) {
 			clientY = 0;
 		}
+
 		// dont call event handler or diff if nothing changed
 		if (this.state.clientX === clientX && this.state.clientY === clientY) {
 			return;
@@ -623,6 +656,13 @@ module.exports = React.createClass({
 
 		// call event handler
 		this.props.onDrag(e, createUIEvent(this));
+	},
+
+	reset: function() {
+		this.setState({
+			clientX: 0,
+			clientY: 0
+		});
 	},
 
 	render: function () {
@@ -639,7 +679,7 @@ module.exports = React.createClass({
 		};
 
 		// Set zIndex if currently dragging and prop has been provided
-		if (this.state.dragging && !isNaN(this.props.zIndex)) {
+		if (!isNaN(this.props.zIndex)) {
 			style.zIndex = this.props.zIndex;
 		}
 
@@ -647,11 +687,13 @@ module.exports = React.createClass({
 			style = merge(style, this.props.style);
 		}
 
+		console.log(style);
+
 		// Reuse the child provided
 		// This makes it flexible to use whatever element is wanted (div, ul, etc)
 		return React.addons.cloneWithProps(React.Children.only(this.props.children), {
 			style: style,
-			className: 'react-draggable',
+			className: this.props.className,
 
 			onMouseDown: this.handleDragStart,
 			onTouchStart: function(ev){

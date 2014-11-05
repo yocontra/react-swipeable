@@ -6,37 +6,64 @@ var Swipeable = require('../../../src');
 var React = require('react');
 window.React = React; // for dev
 
-var App = React.createClass({
-  displayName: 'demo',
-  getInitialState: function(){
-    return {};
+var arr = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+
+// TODO: figure out how to remove children better
+var Stack = React.createClass({
+  displayName: 'Stack',
+  propTypes: {
+    onSwipeRight: React.PropTypes.func,
+    onSwipeLeft: React.PropTypes.func
   },
   swipedRight: function(){
-    console.log('swiped right');
+    var child = this.props.children.shift();
+    if (this.props.onSwipeRight) {
+      this.props.onSwipeRight(child);
+    }
+    this.forceUpdate();
   },
   swipedLeft: function(){
-    console.log('swiped left');
+    var child = this.props.children.shift();
+    if (this.props.onSwipeLeft) {
+      this.props.onSwipeLeft(child);
+    }
+    this.forceUpdate();
   },
   render: function(){
-    var child = React.DOM.div({
-      style: {
-        height: 250,
-        width: 250,
-        backgroundColor: 'red'
-      }
-    });
+    // wrap each child in a swipeable
+    var children = this.props.children.map(function(child, idx){
+      var zIndex = this.props.children.length-idx;
+      return Swipeable({
+        key: zIndex,
+        onSwipeRight: this.swipedRight,
+        onSwipeLeft: this.swipedLeft,
+        className: 'demo-swipeable',
+        zIndex: zIndex
+      }, React.addons.cloneWithProps(child));
+    }, this);
 
-    var swipeable = Swipeable({
-      onSwipeRight: this.swipedRight,
-      onSwipeLeft: this.swipedLeft
-    }, child);
-
+    // wrap in a dummy container
     var container = React.DOM.div({
-      className: 'demo-container'
-    }, swipeable);
+      className: this.props.className,
+      style: this.props.style
+    }, children);
 
     return container;
   }
 });
 
-React.renderComponent(App(), document.body);
+var App = React.createClass({
+  displayName: 'demo',
+  render: function(){
+    var stackChildren = arr.map(function(i){
+      return React.DOM.div(null, String(i));
+    });
+    var stack = Stack(null, stackChildren);
+    var container = React.DOM.div({
+      className: 'demo-container'
+    }, stack);
+    return container;
+  }
+});
+
+React.render(App(), document.body);

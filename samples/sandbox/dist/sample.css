@@ -2,15 +2,20 @@
 html, body {
   height: 100%;
   width: 100%;
-
   background-color: #1A1A1A;
 }
 
 .demo-container {
   margin: auto;
+  height: 500px;
+  width: 500px;
+  background-color: white;
+}
+
+.demo-swipeable {
   position: absolute;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  right: 0;
+  margin: auto;
+  height: 250px;
+  width: 250px;
+  background-color: red;
 }
