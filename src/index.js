@@ -1,8 +1,7 @@
 'use strict';
 
-var ReactCompositeComponent = require('react/lib/ReactCompositeComponent');
-var PropTypes = require('react/lib/ReactPropTypes');
-var merge = require('react/lib/merge');
+var React = require('react');
+var merge = require('lodash.merge');
 var Draggable = require('react-draggable');
 
 function getRotationAngle(v, max, angle) {
@@ -31,16 +30,16 @@ var defaultStyle = {
 
 // TODO: rotate back if stopped and didnt swipe right or left
 
-var Swipeable = ReactCompositeComponent.createClass({
+var Swipeable = React.createClass({
   displayName: 'Swipeable',
   propTypes: {
-    onDragStart: PropTypes.func,
-    onDragStop: PropTypes.func,
-    onDrag: PropTypes.func,
-    onSwipeRight: PropTypes.func,
-    onSwipeLeft: PropTypes.func,
-    zIndex: PropTypes.number,
-    rotationAngle: PropTypes.number
+    onDragStart: React.PropTypes.func,
+    onDragStop: React.PropTypes.func,
+    onDrag: React.PropTypes.func,
+    onSwipeRight: React.PropTypes.func,
+    onSwipeLeft: React.PropTypes.func,
+    zIndex: React.PropTypes.number,
+    rotationAngle: React.PropTypes.number
   },
 
   getDefaultProps: function(){
@@ -118,4 +117,4 @@ var Swipeable = ReactCompositeComponent.createClass({
   }
 });
 
-module.exports = Swipeable;
+module.exports = React.createFactory(Swipeable);

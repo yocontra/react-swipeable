@@ -20,6 +20,7 @@
     "component"
   ],
   "dependencies": {
+    "lodash.merge": "^2.4.1",
     "react": "^0.12.0",
     "react-draggable": "^0.3.0"
   },
@@ -46,7 +47,7 @@
     "stylus": "^0.49.2",
     "vinyl-buffer": "^1.0.0",
     "vinyl-source-stream": "^0.1.1",
-    "watchify": "^1.0.0"
+    "watchify": "^2.0.0"
   },
   "scripts": {
     "lint": "jshint ./src --reporter node_modules/jshint-stylish/stylish.js --exclude node_modules",
