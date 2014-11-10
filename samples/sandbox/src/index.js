@@ -2,8 +2,8 @@
 
 'use strict';
 
-var Swipeable = require('../../../src');
 var React = require('react');
+var Swipeable = React.createFactory(require('../../../src'));
 window.React = React; // for dev
 
 var arr = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
@@ -51,12 +51,15 @@ var Stack = React.createClass({
     return container;
   }
 });
+Stack = React.createFactory(Stack);
 
 var App = React.createClass({
   displayName: 'demo',
   render: function(){
     var stackChildren = arr.map(function(i){
-      return React.DOM.div(null, String(i));
+      return React.DOM.div({
+        key: String(i)
+      }, String(i));
     });
     var stack = Stack(null, stackChildren);
     var container = React.DOM.div({
@@ -65,5 +68,6 @@ var App = React.createClass({
     return container;
   }
 });
+App = React.createFactory(App);
 
 React.render(App(), document.body);

@@ -3,8 +3,8 @@
 
 'use strict';
 
-var Swipeable = require('../../../src');
 var React = require('react');
+var Swipeable = React.createFactory(require('../../../src'));
 window.React = React; // for dev
 
 var arr = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
@@ -52,12 +52,15 @@ var Stack = React.createClass({
     return container;
   }
 });
+Stack = React.createFactory(Stack);
 
 var App = React.createClass({
   displayName: 'demo',
   render: function(){
     var stackChildren = arr.map(function(i){
-      return React.DOM.div(null, String(i));
+      return React.DOM.div({
+        key: String(i)
+      }, String(i));
     });
     var stack = Stack(null, stackChildren);
     var container = React.DOM.div({
@@ -66,6 +69,7 @@ var App = React.createClass({
     return container;
   }
 });
+App = React.createFactory(App);
 
 React.render(App(), document.body);
 },{"../../../src":"/Users/contra/Projects/react-swipeable/src/index.js","react":"/Users/contra/Projects/react-swipeable/node_modules/react/react.js"}],"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js":[function(require,module,exports){
@@ -1301,8 +1305,8 @@ var isPlainObject = !getPrototypeOf ? shimIsPlainObject : function(value) {
 module.exports = isPlainObject;
 
 },{"lodash._isnative":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basemerge/node_modules/lodash.isplainobject/node_modules/lodash._isnative/index.js","lodash._shimisplainobject":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basemerge/node_modules/lodash.isplainobject/node_modules/lodash._shimisplainobject/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basemerge/node_modules/lodash.isplainobject/node_modules/lodash._isnative/index.js":[function(require,module,exports){
-module.exports=require("/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basemerge/node_modules/lodash.forown/node_modules/lodash.keys/node_modules/lodash._isnative/index.js")
-},{"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basemerge/node_modules/lodash.forown/node_modules/lodash.keys/node_modules/lodash._isnative/index.js":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basemerge/node_modules/lodash.forown/node_modules/lodash.keys/node_modules/lodash._isnative/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basemerge/node_modules/lodash.isplainobject/node_modules/lodash._shimisplainobject/index.js":[function(require,module,exports){
+module.exports=require("/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basemerge/node_modules/lodash.isarray/node_modules/lodash._isnative/index.js")
+},{"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basemerge/node_modules/lodash.isarray/node_modules/lodash._isnative/index.js":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basemerge/node_modules/lodash.isarray/node_modules/lodash._isnative/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basemerge/node_modules/lodash.isplainobject/node_modules/lodash._shimisplainobject/index.js":[function(require,module,exports){
 /**
  * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
  * Build: `lodash modularize modern exports="npm" -o ./npm/`
@@ -1589,7 +1593,7 @@ module.exports = require('./lib/draggable');
 
 /** @jsx React.DOM */
 var React = require('react/addons');
-var merge = require('react/lib/merge');
+var merge = require('lodash.merge');
 var emptyFunction = require('react/lib/emptyFunction');
 
 function createUIEvent(draggable) {
@@ -2060,8 +2064,6 @@ module.exports = React.createClass({
 			style = merge(style, this.props.style);
 		}
 
-		console.log(style);
-
 		// Reuse the child provided
 		// This makes it flexible to use whatever element is wanted (div, ul, etc)
 		return React.addons.cloneWithProps(React.Children.only(this.props.children), {
@@ -2080,7 +2082,7 @@ module.exports = React.createClass({
 	}
 });
 
-},{"react/addons":"/Users/contra/Projects/react-swipeable/node_modules/react/addons.js","react/lib/emptyFunction":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/emptyFunction.js","react/lib/merge":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/merge.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/addons.js":[function(require,module,exports){
+},{"lodash.merge":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/index.js","react/addons":"/Users/contra/Projects/react-swipeable/node_modules/react/addons.js","react/lib/emptyFunction":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/emptyFunction.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/addons.js":[function(require,module,exports){
 module.exports = require('./lib/ReactWithAddons');
 
 },{"./lib/ReactWithAddons":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactWithAddons.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/AutoFocusMixin.js":[function(require,module,exports){
@@ -21243,43 +21245,7 @@ function memoizeStringOnly(callback) {
 
 module.exports = memoizeStringOnly;
 
-},{}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/merge.js":[function(require,module,exports){
-/**
- * Copyright 2013-2014, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @providesModule merge
- */
-
-"use strict";
-
-var assign = require("./Object.assign");
-
-/**
- * Shallow merges two structures into a return value, without mutating either.
- *
- * @param {?object} one Optional object with properties to merge from.
- * @param {?object} two Optional object with properties to merge from.
- * @return {object} The shallow extension of one by two.
- */
-var merge = function(one, two) {
-  return assign({}, one, two);
-};
-
-module.exports = merge;
-
-// deprecation notice
-console.warn(
-  'react/lib/merge has been deprecated and will be removed in the ' +
-  'next version of React. All uses can be replaced with ' +
-  'Object.assign({}, a, b) or _.extend({}, a, b).'
-);
-
-},{"./Object.assign":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/Object.assign.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/monitorCodeUse.js":[function(require,module,exports){
+},{}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/monitorCodeUse.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2014, Facebook, Inc.
@@ -22045,7 +22011,7 @@ module.exports = require('./lib/React');
 
 var React = require('react');
 var merge = require('lodash.merge');
-var Draggable = require('react-draggable');
+var Draggable = React.createFactory(require('react-draggable'));
 
 function getRotationAngle(v, max, angle) {
   return angle * (v / max);
@@ -22160,7 +22126,7 @@ var Swipeable = React.createClass({
   }
 });
 
-module.exports = React.createFactory(Swipeable);
+module.exports = Swipeable;
 },{"lodash.merge":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/index.js","react":"/Users/contra/Projects/react-swipeable/node_modules/react/react.js","react-draggable":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/index.js"}]},{},["./samples/sandbox/src/index.js"])("./samples/sandbox/src/index.js")
 });
 

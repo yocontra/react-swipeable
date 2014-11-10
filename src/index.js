@@ -2,7 +2,7 @@
 
 var React = require('react');
 var merge = require('lodash.merge');
-var Draggable = require('react-draggable');
+var Draggable = React.createFactory(require('react-draggable'));
 
 function getRotationAngle(v, max, angle) {
   return angle * (v / max);
@@ -117,4 +117,4 @@ var Swipeable = React.createClass({
   }
 });
 
-module.exports = React.createFactory(Swipeable);
+module.exports = Swipeable;

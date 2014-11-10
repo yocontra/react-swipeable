@@ -22,7 +22,7 @@
   "dependencies": {
     "lodash.merge": "^2.4.1",
     "react": "^0.12.0",
-    "react-draggable": "^0.3.0"
+    "react-draggable": "https://github.com/contra/react-draggable/archive/new-features.tar.gz"
   },
   "devDependencies": {
     "autoprefixer-stylus": "^0.3.0",
