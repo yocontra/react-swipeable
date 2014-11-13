@@ -88,8 +88,10 @@ var Swipeable = React.createClass({
     this.setState({rotation: rotateAngle});
 
     if (ui.position.left >= this.state.breakpoint) {
+      this.reset();
       this.setState({swiped: 'right'}, this.props.onSwipeRight);
     } else if (ui.position.left <= -this.state.breakpoint) {
+      this.reset();
       this.setState({swiped: 'left'}, this.props.onSwipeLeft);
     }
 
@@ -116,10 +118,11 @@ var Swipeable = React.createClass({
 
   render: function(){
     var style = merge(rotate(this.state.rotation), defaultStyle);
+    var axis = (this.state.swiped ? null : 'x');
 
     var draggable = Draggable({
       ref: 'draggable',
-      axis: 'x',
+      axis: axis,
       onStart: this.props.onDragStart,
       onStop: this.handleDragStop,
       onDrag: this.handleDrag,
