@@ -1,4 +1,5 @@
 !function(e){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=e();else if("function"==typeof define&&define.amd)define([],e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.reactSwipeable=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({"./src/index.js":[function(require,module,exports){
+/* global window:true */
 'use strict';
 
 var React = require('react');
@@ -57,8 +58,24 @@ var Swipeable = React.createClass({
   },
 
   componentDidMount: function(){
+    this.setBreakPoint();
+    window.addEventListener('resize', this.setBreakPoint);
+  },
+
+  componentWillUnmount: function() {
+    window.removeEventListener('resize', this.setBreakPoint);
+  },
+
+  setBreakPoint: function(){
     var el = this.getDOMNode();
-    this.setState({breakpoint: el.clientWidth/2});
+    var breakpoint = el.offsetWidth / 2;
+    if (this.state.breakpoint !== breakpoint) {
+      this.setState({breakpoint: breakpoint});
+    }
+  },
+
+  componentDidUpdate: function(){
+    this.setBreakPoint();
   },
 
   handleDrag: function(event, ui){
@@ -843,11 +860,7 @@ module.exports = baseCreateWrapper;
 
 },{"lodash._basecreate":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash.bind/node_modules/lodash._createwrapper/node_modules/lodash._basecreatewrapper/node_modules/lodash._basecreate/index.js","lodash._setbinddata":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash._setbinddata/index.js","lodash._slice":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._slice/index.js","lodash.isobject":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash.isobject/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash.bind/node_modules/lodash._createwrapper/node_modules/lodash._basecreatewrapper/node_modules/lodash._basecreate/index.js":[function(require,module,exports){
 module.exports=require("/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash.bind/node_modules/lodash._createwrapper/node_modules/lodash._basebind/node_modules/lodash._basecreate/index.js")
-},{"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash.bind/node_modules/lodash._createwrapper/node_modules/lodash._basebind/node_modules/lodash._basecreate/index.js":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash.bind/node_modules/lodash._createwrapper/node_modules/lodash._basebind/node_modules/lodash._basecreate/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash.bind/node_modules/lodash._createwrapper/node_modules/lodash._basecreatewrapper/node_modules/lodash._basecreate/node_modules/lodash._isnative/index.js":[function(require,module,exports){
-module.exports=require("/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash._setbinddata/node_modules/lodash._isnative/index.js")
-},{"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash._setbinddata/node_modules/lodash._isnative/index.js":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash._setbinddata/node_modules/lodash._isnative/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash.bind/node_modules/lodash._createwrapper/node_modules/lodash._basecreatewrapper/node_modules/lodash._basecreate/node_modules/lodash.noop/index.js":[function(require,module,exports){
-module.exports=require("/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash._setbinddata/node_modules/lodash.noop/index.js")
-},{"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash._setbinddata/node_modules/lodash.noop/index.js":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash._setbinddata/node_modules/lodash.noop/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash.bind/node_modules/lodash._createwrapper/node_modules/lodash.isfunction/index.js":[function(require,module,exports){
+},{"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash.bind/node_modules/lodash._createwrapper/node_modules/lodash._basebind/node_modules/lodash._basecreate/index.js":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash.bind/node_modules/lodash._createwrapper/node_modules/lodash._basebind/node_modules/lodash._basecreate/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash.bind/node_modules/lodash._createwrapper/node_modules/lodash.isfunction/index.js":[function(require,module,exports){
 /**
  * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
  * Build: `lodash modularize modern exports="npm" -o ./npm/`
@@ -951,8 +964,8 @@ module.exports = support;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"lodash._isnative":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash.support/node_modules/lodash._isnative/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash.support/node_modules/lodash._isnative/index.js":[function(require,module,exports){
-module.exports=require("/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash._setbinddata/node_modules/lodash._isnative/index.js")
-},{"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash._setbinddata/node_modules/lodash._isnative/index.js":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash._setbinddata/node_modules/lodash._isnative/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basemerge/index.js":[function(require,module,exports){
+module.exports=require("/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash.bind/node_modules/lodash._createwrapper/node_modules/lodash._basebind/node_modules/lodash._basecreate/node_modules/lodash._isnative/index.js")
+},{"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash.bind/node_modules/lodash._createwrapper/node_modules/lodash._basebind/node_modules/lodash._basecreate/node_modules/lodash._isnative/index.js":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash.bind/node_modules/lodash._createwrapper/node_modules/lodash._basebind/node_modules/lodash._basecreate/node_modules/lodash._isnative/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basemerge/index.js":[function(require,module,exports){
 /**
  * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
  * Build: `lodash modularize modern exports="npm" -o ./npm/`
@@ -1203,8 +1216,8 @@ var keys = !nativeKeys ? shimKeys : function(object) {
 module.exports = keys;
 
 },{"lodash._isnative":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basemerge/node_modules/lodash.forown/node_modules/lodash.keys/node_modules/lodash._isnative/index.js","lodash._shimkeys":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basemerge/node_modules/lodash.forown/node_modules/lodash.keys/node_modules/lodash._shimkeys/index.js","lodash.isobject":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash.isobject/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basemerge/node_modules/lodash.forown/node_modules/lodash.keys/node_modules/lodash._isnative/index.js":[function(require,module,exports){
-module.exports=require("/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash._setbinddata/node_modules/lodash._isnative/index.js")
-},{"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash._setbinddata/node_modules/lodash._isnative/index.js":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash._setbinddata/node_modules/lodash._isnative/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basemerge/node_modules/lodash.forown/node_modules/lodash.keys/node_modules/lodash._shimkeys/index.js":[function(require,module,exports){
+module.exports=require("/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash.support/node_modules/lodash._isnative/index.js")
+},{"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash.support/node_modules/lodash._isnative/index.js":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash.support/node_modules/lodash._isnative/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basemerge/node_modules/lodash.forown/node_modules/lodash.keys/node_modules/lodash._shimkeys/index.js":[function(require,module,exports){
 /**
  * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
  * Build: `lodash modularize modern exports="npm" -o ./npm/`
@@ -1292,8 +1305,8 @@ var isArray = nativeIsArray || function(value) {
 module.exports = isArray;
 
 },{"lodash._isnative":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basemerge/node_modules/lodash.isarray/node_modules/lodash._isnative/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basemerge/node_modules/lodash.isarray/node_modules/lodash._isnative/index.js":[function(require,module,exports){
-module.exports=require("/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash._setbinddata/node_modules/lodash._isnative/index.js")
-},{"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash._setbinddata/node_modules/lodash._isnative/index.js":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash._setbinddata/node_modules/lodash._isnative/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basemerge/node_modules/lodash.isplainobject/index.js":[function(require,module,exports){
+module.exports=require("/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basemerge/node_modules/lodash.forown/node_modules/lodash.keys/node_modules/lodash._isnative/index.js")
+},{"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basemerge/node_modules/lodash.forown/node_modules/lodash.keys/node_modules/lodash._isnative/index.js":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basemerge/node_modules/lodash.forown/node_modules/lodash.keys/node_modules/lodash._isnative/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basemerge/node_modules/lodash.isplainobject/index.js":[function(require,module,exports){
 /**
  * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
  * Build: `lodash modularize modern exports="npm" -o ./npm/`
@@ -1356,8 +1369,8 @@ var isPlainObject = !getPrototypeOf ? shimIsPlainObject : function(value) {
 module.exports = isPlainObject;
 
 },{"lodash._isnative":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basemerge/node_modules/lodash.isplainobject/node_modules/lodash._isnative/index.js","lodash._shimisplainobject":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basemerge/node_modules/lodash.isplainobject/node_modules/lodash._shimisplainobject/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basemerge/node_modules/lodash.isplainobject/node_modules/lodash._isnative/index.js":[function(require,module,exports){
-module.exports=require("/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash._setbinddata/node_modules/lodash._isnative/index.js")
-},{"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash._setbinddata/node_modules/lodash._isnative/index.js":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash._setbinddata/node_modules/lodash._isnative/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basemerge/node_modules/lodash.isplainobject/node_modules/lodash._shimisplainobject/index.js":[function(require,module,exports){
+module.exports=require("/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basemerge/node_modules/lodash.forown/node_modules/lodash.keys/node_modules/lodash._isnative/index.js")
+},{"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basemerge/node_modules/lodash.forown/node_modules/lodash.keys/node_modules/lodash._isnative/index.js":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basemerge/node_modules/lodash.forown/node_modules/lodash.keys/node_modules/lodash._isnative/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basemerge/node_modules/lodash.isplainobject/node_modules/lodash._shimisplainobject/index.js":[function(require,module,exports){
 /**
  * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
  * Build: `lodash modularize modern exports="npm" -o ./npm/`
@@ -1635,8 +1648,8 @@ function isObject(value) {
 module.exports = isObject;
 
 },{"lodash._objecttypes":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash.isobject/node_modules/lodash._objecttypes/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash.isobject/node_modules/lodash._objecttypes/index.js":[function(require,module,exports){
-module.exports=require("/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basemerge/node_modules/lodash.forown/node_modules/lodash._objecttypes/index.js")
-},{"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basemerge/node_modules/lodash.forown/node_modules/lodash._objecttypes/index.js":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basemerge/node_modules/lodash.forown/node_modules/lodash._objecttypes/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/index.js":[function(require,module,exports){
+module.exports=require("/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basemerge/node_modules/lodash.isplainobject/node_modules/lodash._shimisplainobject/node_modules/lodash.forin/node_modules/lodash._objecttypes/index.js")
+},{"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basemerge/node_modules/lodash.isplainobject/node_modules/lodash._shimisplainobject/node_modules/lodash.forin/node_modules/lodash._objecttypes/index.js":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basemerge/node_modules/lodash.isplainobject/node_modules/lodash._shimisplainobject/node_modules/lodash.forin/node_modules/lodash._objecttypes/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/index.js":[function(require,module,exports){
 module.exports = require('./lib/draggable');
 
 },{"./lib/draggable":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/lib/draggable.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/lib/draggable.js":[function(require,module,exports){

@@ -1,3 +1,4 @@
+/* global window:true */
 'use strict';
 
 var React = require('react');
@@ -56,8 +57,24 @@ var Swipeable = React.createClass({
   },
 
   componentDidMount: function(){
+    this.setBreakPoint();
+    window.addEventListener('resize', this.setBreakPoint);
+  },
+
+  componentWillUnmount: function() {
+    window.removeEventListener('resize', this.setBreakPoint);
+  },
+
+  setBreakPoint: function(){
     var el = this.getDOMNode();
-    this.setState({breakpoint: el.clientWidth/2});
+    var breakpoint = el.offsetWidth / 2;
+    if (this.state.breakpoint !== breakpoint) {
+      this.setState({breakpoint: breakpoint});
+    }
+  },
+
+  componentDidUpdate: function(){
+    this.setBreakPoint();
   },
 
   handleDrag: function(event, ui){
