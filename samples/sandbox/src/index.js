@@ -6,7 +6,7 @@ var React = require('react');
 var Swipeable = React.createFactory(require('../../../src'));
 window.React = React; // for dev
 
-var arr = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+var arr = [1, 2];
 
 // TODO: figure out how to remove children better
 var Stack = React.createClass({
@@ -16,18 +16,22 @@ var Stack = React.createClass({
     onSwipeLeft: React.PropTypes.func
   },
   swipedRight: function(){
+    /*
     var child = this.props.children.shift();
     if (this.props.onSwipeRight) {
       this.props.onSwipeRight(child);
     }
     this.forceUpdate();
+    */
   },
   swipedLeft: function(){
+    /*
     var child = this.props.children.shift();
     if (this.props.onSwipeLeft) {
       this.props.onSwipeLeft(child);
     }
     this.forceUpdate();
+    */
   },
   render: function(){
     // wrap each child in a swipeable

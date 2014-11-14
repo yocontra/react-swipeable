@@ -2,7 +2,9 @@
 'use strict';
 
 var React = require('react');
+var tweenState = require('react-tween-state');
 var merge = require('lodash.merge');
+var clone = require('lodash.clone');
 var Draggable = React.createFactory(require('react-draggable'));
 
 function getRotationAngle(v, max, angle) {
@@ -20,19 +22,11 @@ function rotate(deg) {
   };
 }
 
-var defaultStyle = {
-  position: 'relative',
-  userSelect: 'none',
-  webkitUserSelect: 'none',
-  mozUserSelect: 'none',
-  oUserSelect: 'none',
-  msUserSelect: 'none'
-};
-
 // TODO: rotate back if stopped and didnt swipe right or left
 
 var Swipeable = React.createClass({
   displayName: 'Swipeable',
+  mixins: [tweenState.Mixin],
   propTypes: {
     onDragStart: React.PropTypes.func,
     onDragStop: React.PropTypes.func,
@@ -40,12 +34,18 @@ var Swipeable = React.createClass({
     onSwipeRight: React.PropTypes.func,
     onSwipeLeft: React.PropTypes.func,
     zIndex: React.PropTypes.number,
-    rotationAngle: React.PropTypes.number
+    rotationAngle: React.PropTypes.number,
+    animation: React.PropTypes.object
   },
 
   getDefaultProps: function(){
     return {
-      rotationAngle: 20
+      rotationAngle: 20,
+      animation: {
+        easing: tweenState.easingTypes.easeInOutElastic,
+        duration: 1000,
+        endValue: 0
+      }
     };
   },
 
@@ -86,21 +86,28 @@ var Swipeable = React.createClass({
     var rotateAngle = getRotationAngle(pos, this.state.breakpoint, this.props.rotationAngle);
     this.setState({rotation: rotateAngle});
 
-    if (ui.position.left >= this.state.breakpoint) {
-      this.reset();
-      this.setState({swiped: 'right'}, this.props.onSwipeRight);
-    } else if (ui.position.left <= -this.state.breakpoint) {
-      this.reset();
-      this.setState({swiped: 'left'}, this.props.onSwipeLeft);
-    }
-
     if (this.props.onDrag) {
       this.props.onDrag(event, ui);
     }
   },
 
   handleDragStop: function(event, ui){
-    if (ui.position.left !== this.state.breakpoint &&
+    if (this.state.swiped) {
+      return;
+    }
+
+    var pos = ui.position.left;
+
+    if (pos >= this.state.breakpoint) {
+      this.reset();
+      this.setState({swiped: 'right'}, this.props.onSwipeRight);
+    } else if (pos <= -this.state.breakpoint) {
+      this.reset();
+      this.setState({swiped: 'left'}, this.props.onSwipeLeft);
+    }
+
+    if (!this.state.swiped &&
+      ui.position.left !== this.state.breakpoint &&
       ui.position.left !== -this.state.breakpoint) {
       this.reset();
     }
@@ -111,12 +118,24 @@ var Swipeable = React.createClass({
   },
 
   reset: function(){
-    this.setState({rotation: 0});
-    this.refs.draggable.reset();
+    if (this.props.animation) {
+      this.tweenState('rotation', clone(this.props.animation));
+    } else {
+      this.setState({rotation: 0});
+    }
+    this.refs.draggable.reset(clone(this.props.animation), clone(this.props.animation));
   },
 
   render: function(){
-    var style = merge(rotate(this.state.rotation), defaultStyle);
+    var defaultStyle = {
+      position: 'relative',
+      userSelect: 'none',
+      webkitUserSelect: 'none',
+      mozUserSelect: 'none',
+      msUserSelect: 'none',
+      oUserSelect: 'none',
+    };
+    var style = merge(defaultStyle, rotate(this.getTweeningValue('rotation')));
     var axis = (this.state.swiped ? null : 'x');
 
     var draggable = Draggable({

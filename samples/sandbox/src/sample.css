@@ -10,12 +10,18 @@ html, body {
   height: 500px;
   width: 500px;
   background-color: white;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .demo-swipeable {
+  box-sizing: border-box;
+  border: 2px solid blue;
   position: absolute;
   margin: auto;
   height: 250px;
   width: 250px;
+  font-size: 40px;
+  text-align: center;
   background-color: red;
 }

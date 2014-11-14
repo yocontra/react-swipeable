@@ -20,9 +20,11 @@
     "component"
   ],
   "dependencies": {
+    "lodash.clone": "^2.4.1",
     "lodash.merge": "^2.4.1",
     "react": "^0.12.0",
-    "react-draggable": "https://github.com/contra/react-draggable/archive/new-features.tar.gz"
+    "react-draggable": "https://github.com/contra/react-draggable/archive/new-features.tar.gz",
+    "react-tween-state": "0.0.3"
   },
   "devDependencies": {
     "autoprefixer-stylus": "^0.3.0",
