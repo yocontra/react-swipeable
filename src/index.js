@@ -42,7 +42,7 @@ var Swipeable = React.createClass({
     return {
       rotationAngle: 20,
       animation: {
-        easing: tweenState.easingTypes.easeInOutElastic,
+        easing: tweenState.easingTypes.easeInElastic,
         duration: 750,
         endValue: 0
       }
