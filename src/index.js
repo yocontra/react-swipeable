@@ -136,7 +136,7 @@ var Swipeable = React.createClass({
       oUserSelect: 'none',
     };
     var style = merge(defaultStyle, rotate(this.getTweeningValue('rotation')));
-    var axis = (this.state.swiped ? null : 'x');
+    var axis = (this.state.swiped ? null : 'both');
 
     var draggable = Draggable({
       ref: 'draggable',
