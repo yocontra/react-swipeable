@@ -52,7 +52,8 @@ var Swipeable = React.createClass({
   getInitialState: function(){
     return {
       rotation: 0,
-      swiped: null
+      swiped: null,
+      leaning: null
     };
   },
 
@@ -67,7 +68,7 @@ var Swipeable = React.createClass({
 
   setBreakPoint: function(){
     var el = this.getDOMNode();
-    var breakpoint = el.offsetWidth / 2;
+    var breakpoint = el.offsetWidth / 4;
     if (this.state.breakpoint !== breakpoint) {
       this.setState({breakpoint: breakpoint});
     }
@@ -83,8 +84,21 @@ var Swipeable = React.createClass({
     }
 
     var pos = ui.position.left;
+
+    // determine which way its leaning
+    var leaning = null;
+    if (pos >= this.state.breakpoint) {
+      leaning = 'right';
+    } else if (pos <= -this.state.breakpoint) {
+      leaning = 'left';
+    }
+    ui.leaning = leaning;
+    
     var rotateAngle = getRotationAngle(pos, this.state.breakpoint, this.props.rotationAngle);
-    this.setState({rotation: rotateAngle});
+    this.setState({
+      rotation: rotateAngle,
+      leaning: leaning
+    });
 
     if (this.props.onDrag) {
       this.props.onDrag(event, ui);
@@ -98,17 +112,17 @@ var Swipeable = React.createClass({
 
     var pos = ui.position.left;
 
-    if (pos >= this.state.breakpoint) {
+    if (this.state.leaning === 'right') {
       this.reset();
       this.setState({swiped: 'right'}, this.props.onSwipeRight);
-    } else if (pos <= -this.state.breakpoint) {
+    } else if (this.state.leaning === 'left') {
       this.reset();
       this.setState({swiped: 'left'}, this.props.onSwipeLeft);
     }
 
     if (!this.state.swiped &&
-      ui.position.left !== this.state.breakpoint &&
-      ui.position.left !== -this.state.breakpoint) {
+      pos !== this.state.breakpoint &&
+      pos !== -this.state.breakpoint) {
       this.reset();
     }
 
@@ -145,9 +159,11 @@ var Swipeable = React.createClass({
       onStop: this.handleDragStop,
       onDrag: this.handleDrag,
       zIndex: this.props.zIndex,
+      /*
       ranges: {
         x: [-this.state.breakpoint, this.state.breakpoint]
       },
+      */
       style: style,
       className: this.props.className
     }, this.props.children);
