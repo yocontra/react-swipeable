@@ -8,7 +8,7 @@ var clone = require('lodash.clone');
 var Draggable = React.createFactory(require('react-draggable'));
 
 function getRotationAngle(v, max, angle) {
-  return angle * (v / max);
+  return Math.min(angle, angle * (v / max));
 }
 
 function rotate(deg) {
