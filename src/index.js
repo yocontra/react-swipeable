@@ -2,6 +2,7 @@
 'use strict';
 
 var React = require('react');
+var events = require('add-event-listener');
 var tweenState = require('react-tween-state');
 var merge = require('lodash.merge');
 var clone = require('lodash.clone');
@@ -54,18 +55,19 @@ var Swipeable = React.createClass({
   getInitialState: function(){
     return {
       rotation: 0,
+      breakpoint: null,
       swiped: null,
       leaning: null
     };
   },
 
   componentDidMount: function(){
+    events.addEventListener(window, 'resize', this.setBreakPoint);
     this.setBreakPoint();
-    window.addEventListener('resize', this.setBreakPoint);
   },
 
   componentWillUnmount: function() {
-    window.removeEventListener('resize', this.setBreakPoint);
+    events.removeEventListener(window, 'resize', this.setBreakPoint);
   },
 
   setBreakPoint: function(){
