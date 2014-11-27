@@ -23,8 +23,6 @@ function rotate(deg) {
   };
 }
 
-// TODO: rotate back if stopped and didnt swipe right or left
-
 var Swipeable = React.createClass({
   displayName: 'Swipeable',
   mixins: [tweenState.Mixin],
