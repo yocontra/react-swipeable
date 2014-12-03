@@ -35,15 +35,21 @@ var Swipeable = React.createClass({
     zIndex: React.PropTypes.number,
     rotationAngle: React.PropTypes.number,
     axis: React.PropTypes.string,
-    animation: React.PropTypes.object
+    incompleteAnimation: React.PropTypes.object,
+    completeAnimation: React.PropTypes.object
   },
 
   getDefaultProps: function(){
     return {
       rotationAngle: 20,
       axis: 'both',
-      animation: {
+      incompleteAnimation: {
         easing: tweenState.easingTypes.easeOutElastic,
+        duration: 750,
+        endValue: 0
+      },
+      completeAnimation: {
+        easing: tweenState.easingTypes.easeOutQuad,
         duration: 750,
         endValue: 0
       }
@@ -111,23 +117,23 @@ var Swipeable = React.createClass({
 
   handleDragStop: function(event, ui){
     if (this.state.swiped) {
-      return this.reset();
+      return this.reset(false);
     }
 
     var pos = ui.position.left;
 
     if (this.state.leaning === 'right') {
-      this.reset();
+      this.reset(true);
       this.setState({swiped: 'right'}, this.props.onSwipeRight);
     } else if (this.state.leaning === 'left') {
-      this.reset();
+      this.reset(true);
       this.setState({swiped: 'left'}, this.props.onSwipeLeft);
     }
 
     if (!this.state.swiped &&
       pos !== this.state.breakpoint &&
       pos !== -this.state.breakpoint) {
-      this.reset();
+      this.reset(false);
     }
 
     if (this.props.onDragStop) {
@@ -135,13 +141,18 @@ var Swipeable = React.createClass({
     }
   },
 
-  reset: function(){
-    if (this.props.animation) {
-      this.tweenState('rotation', clone(this.props.animation));
+  reset: function(completed){
+    var animation = completed ?
+      this.props.completeAnimation :
+      this.props.incompleteAnimation;
+
+    if (animation) {
+      this.tweenState('rotation', clone(animation));
     } else {
       this.setState({rotation: 0});
     }
-    this.refs.draggable.reset(clone(this.props.animation), clone(this.props.animation));
+
+    this.refs.draggable.reset(clone(animation), clone(animation));
   },
 
   render: function(){
@@ -163,7 +174,7 @@ var Swipeable = React.createClass({
       zIndex: this.props.zIndex,
       /*
       ranges: {
-        x: [-this.state.breakpoint, this.state.breakpoint]
+        x: [this.state.lowerLimit, this.state.upperLimit]
       },
       */
       style: style,
