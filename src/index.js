@@ -5,7 +5,6 @@ var React = require('react');
 var events = require('add-event-listener');
 var tweenState = require('react-tween-state');
 var merge = require('lodash.merge');
-var clone = require('lodash.clone');
 var Draggable = React.createFactory(require('react-draggable'));
 
 function getRotationAngle(v, max, angle) {
@@ -49,8 +48,8 @@ var Swipeable = React.createClass({
         endValue: 0
       },
       completeAnimation: {
-        easing: tweenState.easingTypes.easeOutQuad,
-        duration: 750,
+        easing: tweenState.easingTypes.easeInQuad,
+        duration: 500,
         endValue: 0
       }
     };
@@ -69,9 +68,11 @@ var Swipeable = React.createClass({
     events.addEventListener(window, 'resize', this.setBreakPoint);
     this.setBreakPoint();
   },
-
   componentWillUnmount: function() {
     events.removeEventListener(window, 'resize', this.setBreakPoint);
+  },
+  componentDidUpdate: function(){
+    this.setBreakPoint();
   },
 
   setBreakPoint: function(){
@@ -80,10 +81,6 @@ var Swipeable = React.createClass({
     if (this.state.breakpoint !== breakpoint) {
       this.setState({breakpoint: breakpoint});
     }
-  },
-
-  componentDidUpdate: function(){
-    this.setBreakPoint();
   },
 
   handleDrag: function(event, ui){
@@ -114,7 +111,6 @@ var Swipeable = React.createClass({
       this.props.onDrag(event, ui);
     }
   },
-
   handleDragStop: function(event, ui){
     if (this.state.swiped) {
       return this.reset(false);
@@ -141,18 +137,27 @@ var Swipeable = React.createClass({
     }
   },
 
+  emulateSwipeRight: function(){
+    var movement = this.state.breakpoint*4;
+    this.refs.draggable.emulateDrag(movement, -movement);
+  },
+  emulateSwipeLeft: function(){
+    var movement = this.state.breakpoint*4;
+    this.refs.draggable.emulateDrag(-movement, -movement);
+  },
+
   reset: function(completed){
     var animation = completed ?
       this.props.completeAnimation :
       this.props.incompleteAnimation;
 
     if (animation) {
-      this.tweenState('rotation', clone(animation));
+      this.tweenState('rotation', animation);
     } else {
       this.setState({rotation: 0});
     }
 
-    this.refs.draggable.reset(clone(animation), clone(animation));
+    this.refs.draggable.reset(animation, animation);
   },
 
   render: function(){

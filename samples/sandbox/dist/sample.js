@@ -7,7 +7,7 @@ var React = require('react');
 var Swipeable = React.createFactory(require('../../../src'));
 window.React = React; // for dev
 
-var arr = [1, 2];
+var arr = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
 // TODO: figure out how to remove children better
 var Stack = React.createClass({
@@ -17,42 +17,56 @@ var Stack = React.createClass({
     onSwipeLeft: React.PropTypes.func
   },
   swipedRight: function(){
-    /*
-    var child = this.props.children.shift();
+    var child = this.props.children[0];
+    //var child = this.props.children.shift();
     if (this.props.onSwipeRight) {
       this.props.onSwipeRight(child);
     }
-    this.forceUpdate();
-    */
+    //this.forceUpdate();
   },
   swipedLeft: function(){
-    /*
     var child = this.props.children.shift();
     if (this.props.onSwipeLeft) {
       this.props.onSwipeLeft(child);
     }
     this.forceUpdate();
-    */
+  },
+  fakeSwipeRight: function(){
+    this.refs['child-0'].emulateSwipeRight();
+  },
+  fakeSwipeLeft: function(){
+    this.refs['child-0'].emulateSwipeLeft();
   },
   render: function(){
     // wrap each child in a swipeable
     var children = this.props.children.map(function(child, idx){
       var zIndex = this.props.children.length-idx;
-      return Swipeable({
+      var swiping = Swipeable({
+        ref: 'child-'+idx,
         key: zIndex,
         onSwipeRight: this.swipedRight,
         onSwipeLeft: this.swipedLeft,
         className: 'demo-swipeable',
         zIndex: zIndex
       }, React.addons.cloneWithProps(child));
+
+      return (idx === 0) ? swiping : null;
     }, this);
+
+    var likeButton = React.DOM.button({
+      ref: 'likeButton',
+      onClick: this.fakeSwipeRight
+    }, 'Like');
+    var dislikeButton = React.DOM.button({
+      ref: 'dislikeButton',
+      onClick: this.fakeSwipeLeft
+    }, 'Dislike');
 
     // wrap in a dummy container
     var container = React.DOM.div({
       className: this.props.className,
       style: this.props.style
-    }, children);
-
+    }, children, likeButton, dislikeButton);
     return container;
   }
 });
@@ -212,7 +226,7 @@ process.chdir = function (dir) {
     throw new Error('process.chdir is not supported');
 };
 
-},{}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/index.js":[function(require,module,exports){
+},{}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/index.js":[function(require,module,exports){
 /**
  * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
  * Build: `lodash modularize modern exports="npm" -o ./npm/`
@@ -221,752 +235,97 @@ process.chdir = function (dir) {
  * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
  * Available under MIT license <http://lodash.com/license>
  */
-var baseClone = require('lodash._baseclone'),
-    baseCreateCallback = require('lodash._basecreatecallback');
-
-/**
- * Creates a clone of `value`. If `isDeep` is `true` nested objects will also
- * be cloned, otherwise they will be assigned by reference. If a callback
- * is provided it will be executed to produce the cloned values. If the
- * callback returns `undefined` cloning will be handled by the method instead.
- * The callback is bound to `thisArg` and invoked with one argument; (value).
- *
- * @static
- * @memberOf _
- * @category Objects
- * @param {*} value The value to clone.
- * @param {boolean} [isDeep=false] Specify a deep clone.
- * @param {Function} [callback] The function to customize cloning values.
- * @param {*} [thisArg] The `this` binding of `callback`.
- * @returns {*} Returns the cloned value.
- * @example
- *
- * var characters = [
- *   { 'name': 'barney', 'age': 36 },
- *   { 'name': 'fred',   'age': 40 }
- * ];
- *
- * var shallow = _.clone(characters);
- * shallow[0] === characters[0];
- * // => true
- *
- * var deep = _.clone(characters, true);
- * deep[0] === characters[0];
- * // => false
- *
- * _.mixin({
- *   'clone': _.partialRight(_.clone, function(value) {
- *     return _.isElement(value) ? value.cloneNode(false) : undefined;
- *   })
- * });
- *
- * var clone = _.clone(document.body);
- * clone.childNodes.length;
- * // => 0
- */
-function clone(value, isDeep, callback, thisArg) {
-  // allows working with "Collections" methods without using their `index`
-  // and `collection` arguments for `isDeep` and `callback`
-  if (typeof isDeep != 'boolean' && isDeep != null) {
-    thisArg = callback;
-    callback = isDeep;
-    isDeep = false;
-  }
-  return baseClone(value, isDeep, typeof callback == 'function' && baseCreateCallback(callback, thisArg, 1));
-}
-
-module.exports = clone;
-
-},{"lodash._baseclone":"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._baseclone/index.js","lodash._basecreatecallback":"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._basecreatecallback/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._baseclone/index.js":[function(require,module,exports){
-/**
- * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
- * Build: `lodash modularize modern exports="npm" -o ./npm/`
- * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
- * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
- * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
- * Available under MIT license <http://lodash.com/license>
- */
-var assign = require('lodash.assign'),
-    forEach = require('lodash.foreach'),
-    forOwn = require('lodash.forown'),
+var baseCreateCallback = require('lodash._basecreatecallback'),
+    baseMerge = require('lodash._basemerge'),
     getArray = require('lodash._getarray'),
-    isArray = require('lodash.isarray'),
     isObject = require('lodash.isobject'),
     releaseArray = require('lodash._releasearray'),
     slice = require('lodash._slice');
 
-/** Used to match regexp flags from their coerced string values */
-var reFlags = /\w*$/;
-
-/** `Object#toString` result shortcuts */
-var argsClass = '[object Arguments]',
-    arrayClass = '[object Array]',
-    boolClass = '[object Boolean]',
-    dateClass = '[object Date]',
-    funcClass = '[object Function]',
-    numberClass = '[object Number]',
-    objectClass = '[object Object]',
-    regexpClass = '[object RegExp]',
-    stringClass = '[object String]';
-
-/** Used to identify object classifications that `_.clone` supports */
-var cloneableClasses = {};
-cloneableClasses[funcClass] = false;
-cloneableClasses[argsClass] = cloneableClasses[arrayClass] =
-cloneableClasses[boolClass] = cloneableClasses[dateClass] =
-cloneableClasses[numberClass] = cloneableClasses[objectClass] =
-cloneableClasses[regexpClass] = cloneableClasses[stringClass] = true;
-
-/** Used for native method references */
-var objectProto = Object.prototype;
-
-/** Used to resolve the internal [[Class]] of values */
-var toString = objectProto.toString;
-
-/** Native method shortcuts */
-var hasOwnProperty = objectProto.hasOwnProperty;
-
-/** Used to lookup a built-in constructor by [[Class]] */
-var ctorByClass = {};
-ctorByClass[arrayClass] = Array;
-ctorByClass[boolClass] = Boolean;
-ctorByClass[dateClass] = Date;
-ctorByClass[funcClass] = Function;
-ctorByClass[objectClass] = Object;
-ctorByClass[numberClass] = Number;
-ctorByClass[regexpClass] = RegExp;
-ctorByClass[stringClass] = String;
-
 /**
- * The base implementation of `_.clone` without argument juggling or support
- * for `thisArg` binding.
- *
- * @private
- * @param {*} value The value to clone.
- * @param {boolean} [isDeep=false] Specify a deep clone.
- * @param {Function} [callback] The function to customize cloning values.
- * @param {Array} [stackA=[]] Tracks traversed source objects.
- * @param {Array} [stackB=[]] Associates clones with source counterparts.
- * @returns {*} Returns the cloned value.
- */
-function baseClone(value, isDeep, callback, stackA, stackB) {
-  if (callback) {
-    var result = callback(value);
-    if (typeof result != 'undefined') {
-      return result;
-    }
-  }
-  // inspect [[Class]]
-  var isObj = isObject(value);
-  if (isObj) {
-    var className = toString.call(value);
-    if (!cloneableClasses[className]) {
-      return value;
-    }
-    var ctor = ctorByClass[className];
-    switch (className) {
-      case boolClass:
-      case dateClass:
-        return new ctor(+value);
-
-      case numberClass:
-      case stringClass:
-        return new ctor(value);
-
-      case regexpClass:
-        result = ctor(value.source, reFlags.exec(value));
-        result.lastIndex = value.lastIndex;
-        return result;
-    }
-  } else {
-    return value;
-  }
-  var isArr = isArray(value);
-  if (isDeep) {
-    // check for circular references and return corresponding clone
-    var initedStack = !stackA;
-    stackA || (stackA = getArray());
-    stackB || (stackB = getArray());
-
-    var length = stackA.length;
-    while (length--) {
-      if (stackA[length] == value) {
-        return stackB[length];
-      }
-    }
-    result = isArr ? ctor(value.length) : {};
-  }
-  else {
-    result = isArr ? slice(value) : assign({}, value);
-  }
-  // add array properties assigned by `RegExp#exec`
-  if (isArr) {
-    if (hasOwnProperty.call(value, 'index')) {
-      result.index = value.index;
-    }
-    if (hasOwnProperty.call(value, 'input')) {
-      result.input = value.input;
-    }
-  }
-  // exit for shallow clone
-  if (!isDeep) {
-    return result;
-  }
-  // add the source value to the stack of traversed objects
-  // and associate it with its clone
-  stackA.push(value);
-  stackB.push(result);
-
-  // recursively populate clone (susceptible to call stack limits)
-  (isArr ? forEach : forOwn)(value, function(objValue, key) {
-    result[key] = baseClone(objValue, isDeep, callback, stackA, stackB);
-  });
-
-  if (initedStack) {
-    releaseArray(stackA);
-    releaseArray(stackB);
-  }
-  return result;
-}
-
-module.exports = baseClone;
-
-},{"lodash._getarray":"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._baseclone/node_modules/lodash._getarray/index.js","lodash._releasearray":"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._baseclone/node_modules/lodash._releasearray/index.js","lodash._slice":"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._baseclone/node_modules/lodash._slice/index.js","lodash.assign":"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._baseclone/node_modules/lodash.assign/index.js","lodash.foreach":"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._baseclone/node_modules/lodash.foreach/index.js","lodash.forown":"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._baseclone/node_modules/lodash.forown/index.js","lodash.isarray":"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._baseclone/node_modules/lodash.isarray/index.js","lodash.isobject":"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._baseclone/node_modules/lodash.isobject/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._baseclone/node_modules/lodash._getarray/index.js":[function(require,module,exports){
-/**
- * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
- * Build: `lodash modularize modern exports="npm" -o ./npm/`
- * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
- * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
- * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
- * Available under MIT license <http://lodash.com/license>
- */
-var arrayPool = require('lodash._arraypool');
-
-/**
- * Gets an array from the array pool or creates a new one if the pool is empty.
- *
- * @private
- * @returns {Array} The array from the pool.
- */
-function getArray() {
-  return arrayPool.pop() || [];
-}
-
-module.exports = getArray;
-
-},{"lodash._arraypool":"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._baseclone/node_modules/lodash._getarray/node_modules/lodash._arraypool/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._baseclone/node_modules/lodash._getarray/node_modules/lodash._arraypool/index.js":[function(require,module,exports){
-/**
- * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
- * Build: `lodash modularize modern exports="npm" -o ./npm/`
- * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
- * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
- * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
- * Available under MIT license <http://lodash.com/license>
- */
-
-/** Used to pool arrays and objects used internally */
-var arrayPool = [];
-
-module.exports = arrayPool;
-
-},{}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._baseclone/node_modules/lodash._releasearray/index.js":[function(require,module,exports){
-/**
- * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
- * Build: `lodash modularize modern exports="npm" -o ./npm/`
- * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
- * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
- * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
- * Available under MIT license <http://lodash.com/license>
- */
-var arrayPool = require('lodash._arraypool'),
-    maxPoolSize = require('lodash._maxpoolsize');
-
-/**
- * Releases the given array back to the array pool.
- *
- * @private
- * @param {Array} [array] The array to release.
- */
-function releaseArray(array) {
-  array.length = 0;
-  if (arrayPool.length < maxPoolSize) {
-    arrayPool.push(array);
-  }
-}
-
-module.exports = releaseArray;
-
-},{"lodash._arraypool":"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._baseclone/node_modules/lodash._releasearray/node_modules/lodash._arraypool/index.js","lodash._maxpoolsize":"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._baseclone/node_modules/lodash._releasearray/node_modules/lodash._maxpoolsize/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._baseclone/node_modules/lodash._releasearray/node_modules/lodash._arraypool/index.js":[function(require,module,exports){
-module.exports=require("/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._baseclone/node_modules/lodash._getarray/node_modules/lodash._arraypool/index.js")
-},{"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._baseclone/node_modules/lodash._getarray/node_modules/lodash._arraypool/index.js":"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._baseclone/node_modules/lodash._getarray/node_modules/lodash._arraypool/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._baseclone/node_modules/lodash._releasearray/node_modules/lodash._maxpoolsize/index.js":[function(require,module,exports){
-/**
- * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
- * Build: `lodash modularize modern exports="npm" -o ./npm/`
- * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
- * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
- * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
- * Available under MIT license <http://lodash.com/license>
- */
-
-/** Used as the max size of the `arrayPool` and `objectPool` */
-var maxPoolSize = 40;
-
-module.exports = maxPoolSize;
-
-},{}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._baseclone/node_modules/lodash._slice/index.js":[function(require,module,exports){
-/**
- * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
- * Build: `lodash modularize modern exports="npm" -o ./npm/`
- * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
- * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
- * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
- * Available under MIT license <http://lodash.com/license>
- */
-
-/**
- * Slices the `collection` from the `start` index up to, but not including,
- * the `end` index.
- *
- * Note: This function is used instead of `Array#slice` to support node lists
- * in IE < 9 and to ensure dense arrays are returned.
- *
- * @private
- * @param {Array|Object|string} collection The collection to slice.
- * @param {number} start The start index.
- * @param {number} end The end index.
- * @returns {Array} Returns the new array.
- */
-function slice(array, start, end) {
-  start || (start = 0);
-  if (typeof end == 'undefined') {
-    end = array ? array.length : 0;
-  }
-  var index = -1,
-      length = end - start || 0,
-      result = Array(length < 0 ? 0 : length);
-
-  while (++index < length) {
-    result[index] = array[start + index];
-  }
-  return result;
-}
-
-module.exports = slice;
-
-},{}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._baseclone/node_modules/lodash.assign/index.js":[function(require,module,exports){
-/**
- * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
- * Build: `lodash modularize modern exports="npm" -o ./npm/`
- * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
- * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
- * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
- * Available under MIT license <http://lodash.com/license>
- */
-var baseCreateCallback = require('lodash._basecreatecallback'),
-    keys = require('lodash.keys'),
-    objectTypes = require('lodash._objecttypes');
-
-/**
- * Assigns own enumerable properties of source object(s) to the destination
- * object. Subsequent sources will overwrite property assignments of previous
- * sources. If a callback is provided it will be executed to produce the
- * assigned values. The callback is bound to `thisArg` and invoked with two
- * arguments; (objectValue, sourceValue).
+ * Recursively merges own enumerable properties of the source object(s), that
+ * don't resolve to `undefined` into the destination object. Subsequent sources
+ * will overwrite property assignments of previous sources. If a callback is
+ * provided it will be executed to produce the merged values of the destination
+ * and source properties. If the callback returns `undefined` merging will
+ * be handled by the method instead. The callback is bound to `thisArg` and
+ * invoked with two arguments; (objectValue, sourceValue).
  *
  * @static
  * @memberOf _
- * @type Function
- * @alias extend
  * @category Objects
  * @param {Object} object The destination object.
  * @param {...Object} [source] The source objects.
- * @param {Function} [callback] The function to customize assigning values.
+ * @param {Function} [callback] The function to customize merging properties.
  * @param {*} [thisArg] The `this` binding of `callback`.
  * @returns {Object} Returns the destination object.
  * @example
  *
- * _.assign({ 'name': 'fred' }, { 'employer': 'slate' });
- * // => { 'name': 'fred', 'employer': 'slate' }
+ * var names = {
+ *   'characters': [
+ *     { 'name': 'barney' },
+ *     { 'name': 'fred' }
+ *   ]
+ * };
  *
- * var defaults = _.partialRight(_.assign, function(a, b) {
- *   return typeof a == 'undefined' ? b : a;
+ * var ages = {
+ *   'characters': [
+ *     { 'age': 36 },
+ *     { 'age': 40 }
+ *   ]
+ * };
+ *
+ * _.merge(names, ages);
+ * // => { 'characters': [{ 'name': 'barney', 'age': 36 }, { 'name': 'fred', 'age': 40 }] }
+ *
+ * var food = {
+ *   'fruits': ['apple'],
+ *   'vegetables': ['beet']
+ * };
+ *
+ * var otherFood = {
+ *   'fruits': ['banana'],
+ *   'vegetables': ['carrot']
+ * };
+ *
+ * _.merge(food, otherFood, function(a, b) {
+ *   return _.isArray(a) ? a.concat(b) : undefined;
  * });
- *
- * var object = { 'name': 'barney' };
- * defaults(object, { 'name': 'fred', 'employer': 'slate' });
- * // => { 'name': 'barney', 'employer': 'slate' }
+ * // => { 'fruits': ['apple', 'banana'], 'vegetables': ['beet', 'carrot] }
  */
-var assign = function(object, source, guard) {
-  var index, iterable = object, result = iterable;
-  if (!iterable) return result;
+function merge(object) {
   var args = arguments,
-      argsIndex = 0,
-      argsLength = typeof guard == 'number' ? 2 : args.length;
-  if (argsLength > 3 && typeof args[argsLength - 2] == 'function') {
-    var callback = baseCreateCallback(args[--argsLength - 1], args[argsLength--], 2);
-  } else if (argsLength > 2 && typeof args[argsLength - 1] == 'function') {
-    callback = args[--argsLength];
-  }
-  while (++argsIndex < argsLength) {
-    iterable = args[argsIndex];
-    if (iterable && objectTypes[typeof iterable]) {
-    var ownIndex = -1,
-        ownProps = objectTypes[typeof iterable] && keys(iterable),
-        length = ownProps ? ownProps.length : 0;
+      length = 2;
 
-    while (++ownIndex < length) {
-      index = ownProps[ownIndex];
-      result[index] = callback ? callback(result[index], iterable[index]) : iterable[index];
-    }
-    }
-  }
-  return result
-};
-
-module.exports = assign;
-
-},{"lodash._basecreatecallback":"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._basecreatecallback/index.js","lodash._objecttypes":"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._baseclone/node_modules/lodash.assign/node_modules/lodash._objecttypes/index.js","lodash.keys":"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._baseclone/node_modules/lodash.assign/node_modules/lodash.keys/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._baseclone/node_modules/lodash.assign/node_modules/lodash._objecttypes/index.js":[function(require,module,exports){
-/**
- * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
- * Build: `lodash modularize modern exports="npm" -o ./npm/`
- * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
- * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
- * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
- * Available under MIT license <http://lodash.com/license>
- */
-
-/** Used to determine if values are of the language type Object */
-var objectTypes = {
-  'boolean': false,
-  'function': true,
-  'object': true,
-  'number': false,
-  'string': false,
-  'undefined': false
-};
-
-module.exports = objectTypes;
-
-},{}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._baseclone/node_modules/lodash.assign/node_modules/lodash.keys/index.js":[function(require,module,exports){
-/**
- * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
- * Build: `lodash modularize modern exports="npm" -o ./npm/`
- * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
- * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
- * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
- * Available under MIT license <http://lodash.com/license>
- */
-var isNative = require('lodash._isnative'),
-    isObject = require('lodash.isobject'),
-    shimKeys = require('lodash._shimkeys');
-
-/* Native method shortcuts for methods with the same name as other `lodash` methods */
-var nativeKeys = isNative(nativeKeys = Object.keys) && nativeKeys;
-
-/**
- * Creates an array composed of the own enumerable property names of an object.
- *
- * @static
- * @memberOf _
- * @category Objects
- * @param {Object} object The object to inspect.
- * @returns {Array} Returns an array of property names.
- * @example
- *
- * _.keys({ 'one': 1, 'two': 2, 'three': 3 });
- * // => ['one', 'two', 'three'] (property order is not guaranteed across environments)
- */
-var keys = !nativeKeys ? shimKeys : function(object) {
   if (!isObject(object)) {
-    return [];
+    return object;
   }
-  return nativeKeys(object);
-};
-
-module.exports = keys;
-
-},{"lodash._isnative":"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._baseclone/node_modules/lodash.assign/node_modules/lodash.keys/node_modules/lodash._isnative/index.js","lodash._shimkeys":"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._baseclone/node_modules/lodash.assign/node_modules/lodash.keys/node_modules/lodash._shimkeys/index.js","lodash.isobject":"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._baseclone/node_modules/lodash.isobject/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._baseclone/node_modules/lodash.assign/node_modules/lodash.keys/node_modules/lodash._isnative/index.js":[function(require,module,exports){
-/**
- * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
- * Build: `lodash modularize modern exports="npm" -o ./npm/`
- * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
- * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
- * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
- * Available under MIT license <http://lodash.com/license>
- */
-
-/** Used for native method references */
-var objectProto = Object.prototype;
-
-/** Used to resolve the internal [[Class]] of values */
-var toString = objectProto.toString;
-
-/** Used to detect if a method is native */
-var reNative = RegExp('^' +
-  String(toString)
-    .replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-    .replace(/toString| for [^\]]+/g, '.*?') + '$'
-);
-
-/**
- * Checks if `value` is a native function.
- *
- * @private
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if the `value` is a native function, else `false`.
- */
-function isNative(value) {
-  return typeof value == 'function' && reNative.test(value);
-}
-
-module.exports = isNative;
-
-},{}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._baseclone/node_modules/lodash.assign/node_modules/lodash.keys/node_modules/lodash._shimkeys/index.js":[function(require,module,exports){
-/**
- * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
- * Build: `lodash modularize modern exports="npm" -o ./npm/`
- * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
- * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
- * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
- * Available under MIT license <http://lodash.com/license>
- */
-var objectTypes = require('lodash._objecttypes');
-
-/** Used for native method references */
-var objectProto = Object.prototype;
-
-/** Native method shortcuts */
-var hasOwnProperty = objectProto.hasOwnProperty;
-
-/**
- * A fallback implementation of `Object.keys` which produces an array of the
- * given object's own enumerable property names.
- *
- * @private
- * @type Function
- * @param {Object} object The object to inspect.
- * @returns {Array} Returns an array of property names.
- */
-var shimKeys = function(object) {
-  var index, iterable = object, result = [];
-  if (!iterable) return result;
-  if (!(objectTypes[typeof object])) return result;
-    for (index in iterable) {
-      if (hasOwnProperty.call(iterable, index)) {
-        result.push(index);
-      }
-    }
-  return result
-};
-
-module.exports = shimKeys;
-
-},{"lodash._objecttypes":"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._baseclone/node_modules/lodash.assign/node_modules/lodash._objecttypes/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._baseclone/node_modules/lodash.foreach/index.js":[function(require,module,exports){
-/**
- * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
- * Build: `lodash modularize modern exports="npm" -o ./npm/`
- * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
- * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
- * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
- * Available under MIT license <http://lodash.com/license>
- */
-var baseCreateCallback = require('lodash._basecreatecallback'),
-    forOwn = require('lodash.forown');
-
-/**
- * Iterates over elements of a collection, executing the callback for each
- * element. The callback is bound to `thisArg` and invoked with three arguments;
- * (value, index|key, collection). Callbacks may exit iteration early by
- * explicitly returning `false`.
- *
- * Note: As with other "Collections" methods, objects with a `length` property
- * are iterated like arrays. To avoid this behavior `_.forIn` or `_.forOwn`
- * may be used for object iteration.
- *
- * @static
- * @memberOf _
- * @alias each
- * @category Collections
- * @param {Array|Object|string} collection The collection to iterate over.
- * @param {Function} [callback=identity] The function called per iteration.
- * @param {*} [thisArg] The `this` binding of `callback`.
- * @returns {Array|Object|string} Returns `collection`.
- * @example
- *
- * _([1, 2, 3]).forEach(function(num) { console.log(num); }).join(',');
- * // => logs each number and returns '1,2,3'
- *
- * _.forEach({ 'one': 1, 'two': 2, 'three': 3 }, function(num) { console.log(num); });
- * // => logs each number and returns the object (property order is not guaranteed across environments)
- */
-function forEach(collection, callback, thisArg) {
-  var index = -1,
-      length = collection ? collection.length : 0;
-
-  callback = callback && typeof thisArg == 'undefined' ? callback : baseCreateCallback(callback, thisArg, 3);
-  if (typeof length == 'number') {
-    while (++index < length) {
-      if (callback(collection[index], index, collection) === false) {
-        break;
-      }
-    }
-  } else {
-    forOwn(collection, callback);
+  // allows working with `_.reduce` and `_.reduceRight` without using
+  // their `index` and `collection` arguments
+  if (typeof args[2] != 'number') {
+    length = args.length;
   }
-  return collection;
+  if (length > 3 && typeof args[length - 2] == 'function') {
+    var callback = baseCreateCallback(args[--length - 1], args[length--], 2);
+  } else if (length > 2 && typeof args[length - 1] == 'function') {
+    callback = args[--length];
+  }
+  var sources = slice(arguments, 1, length),
+      index = -1,
+      stackA = getArray(),
+      stackB = getArray();
+
+  while (++index < length) {
+    baseMerge(object, sources[index], callback, stackA, stackB);
+  }
+  releaseArray(stackA);
+  releaseArray(stackB);
+  return object;
 }
 
-module.exports = forEach;
+module.exports = merge;
 
-},{"lodash._basecreatecallback":"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._basecreatecallback/index.js","lodash.forown":"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._baseclone/node_modules/lodash.forown/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._baseclone/node_modules/lodash.forown/index.js":[function(require,module,exports){
-/**
- * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
- * Build: `lodash modularize modern exports="npm" -o ./npm/`
- * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
- * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
- * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
- * Available under MIT license <http://lodash.com/license>
- */
-var baseCreateCallback = require('lodash._basecreatecallback'),
-    keys = require('lodash.keys'),
-    objectTypes = require('lodash._objecttypes');
-
-/**
- * Iterates over own enumerable properties of an object, executing the callback
- * for each property. The callback is bound to `thisArg` and invoked with three
- * arguments; (value, key, object). Callbacks may exit iteration early by
- * explicitly returning `false`.
- *
- * @static
- * @memberOf _
- * @type Function
- * @category Objects
- * @param {Object} object The object to iterate over.
- * @param {Function} [callback=identity] The function called per iteration.
- * @param {*} [thisArg] The `this` binding of `callback`.
- * @returns {Object} Returns `object`.
- * @example
- *
- * _.forOwn({ '0': 'zero', '1': 'one', 'length': 2 }, function(num, key) {
- *   console.log(key);
- * });
- * // => logs '0', '1', and 'length' (property order is not guaranteed across environments)
- */
-var forOwn = function(collection, callback, thisArg) {
-  var index, iterable = collection, result = iterable;
-  if (!iterable) return result;
-  if (!objectTypes[typeof iterable]) return result;
-  callback = callback && typeof thisArg == 'undefined' ? callback : baseCreateCallback(callback, thisArg, 3);
-    var ownIndex = -1,
-        ownProps = objectTypes[typeof iterable] && keys(iterable),
-        length = ownProps ? ownProps.length : 0;
-
-    while (++ownIndex < length) {
-      index = ownProps[ownIndex];
-      if (callback(iterable[index], index, collection) === false) return result;
-    }
-  return result
-};
-
-module.exports = forOwn;
-
-},{"lodash._basecreatecallback":"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._basecreatecallback/index.js","lodash._objecttypes":"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._baseclone/node_modules/lodash.forown/node_modules/lodash._objecttypes/index.js","lodash.keys":"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._baseclone/node_modules/lodash.forown/node_modules/lodash.keys/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._baseclone/node_modules/lodash.forown/node_modules/lodash._objecttypes/index.js":[function(require,module,exports){
-module.exports=require("/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._baseclone/node_modules/lodash.assign/node_modules/lodash._objecttypes/index.js")
-},{"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._baseclone/node_modules/lodash.assign/node_modules/lodash._objecttypes/index.js":"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._baseclone/node_modules/lodash.assign/node_modules/lodash._objecttypes/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._baseclone/node_modules/lodash.forown/node_modules/lodash.keys/index.js":[function(require,module,exports){
-module.exports=require("/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._baseclone/node_modules/lodash.assign/node_modules/lodash.keys/index.js")
-},{"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._baseclone/node_modules/lodash.assign/node_modules/lodash.keys/index.js":"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._baseclone/node_modules/lodash.assign/node_modules/lodash.keys/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._baseclone/node_modules/lodash.isarray/index.js":[function(require,module,exports){
-/**
- * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
- * Build: `lodash modularize modern exports="npm" -o ./npm/`
- * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
- * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
- * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
- * Available under MIT license <http://lodash.com/license>
- */
-var isNative = require('lodash._isnative');
-
-/** `Object#toString` result shortcuts */
-var arrayClass = '[object Array]';
-
-/** Used for native method references */
-var objectProto = Object.prototype;
-
-/** Used to resolve the internal [[Class]] of values */
-var toString = objectProto.toString;
-
-/* Native method shortcuts for methods with the same name as other `lodash` methods */
-var nativeIsArray = isNative(nativeIsArray = Array.isArray) && nativeIsArray;
-
-/**
- * Checks if `value` is an array.
- *
- * @static
- * @memberOf _
- * @type Function
- * @category Objects
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if the `value` is an array, else `false`.
- * @example
- *
- * (function() { return _.isArray(arguments); })();
- * // => false
- *
- * _.isArray([1, 2, 3]);
- * // => true
- */
-var isArray = nativeIsArray || function(value) {
-  return value && typeof value == 'object' && typeof value.length == 'number' &&
-    toString.call(value) == arrayClass || false;
-};
-
-module.exports = isArray;
-
-},{"lodash._isnative":"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._baseclone/node_modules/lodash.isarray/node_modules/lodash._isnative/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._baseclone/node_modules/lodash.isarray/node_modules/lodash._isnative/index.js":[function(require,module,exports){
-module.exports=require("/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._baseclone/node_modules/lodash.assign/node_modules/lodash.keys/node_modules/lodash._isnative/index.js")
-},{"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._baseclone/node_modules/lodash.assign/node_modules/lodash.keys/node_modules/lodash._isnative/index.js":"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._baseclone/node_modules/lodash.assign/node_modules/lodash.keys/node_modules/lodash._isnative/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._baseclone/node_modules/lodash.isobject/index.js":[function(require,module,exports){
-/**
- * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
- * Build: `lodash modularize modern exports="npm" -o ./npm/`
- * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
- * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
- * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
- * Available under MIT license <http://lodash.com/license>
- */
-var objectTypes = require('lodash._objecttypes');
-
-/**
- * Checks if `value` is the language type of Object.
- * (e.g. arrays, functions, objects, regexes, `new Number(0)`, and `new String('')`)
- *
- * @static
- * @memberOf _
- * @category Objects
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if the `value` is an object, else `false`.
- * @example
- *
- * _.isObject({});
- * // => true
- *
- * _.isObject([1, 2, 3]);
- * // => true
- *
- * _.isObject(1);
- * // => false
- */
-function isObject(value) {
-  // check if the value is the ECMAScript language type of Object
-  // http://es5.github.io/#x8
-  // and avoid a V8 bug
-  // http://code.google.com/p/v8/issues/detail?id=2291
-  return !!(value && objectTypes[typeof value]);
-}
-
-module.exports = isObject;
-
-},{"lodash._objecttypes":"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._baseclone/node_modules/lodash.isobject/node_modules/lodash._objecttypes/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._baseclone/node_modules/lodash.isobject/node_modules/lodash._objecttypes/index.js":[function(require,module,exports){
-module.exports=require("/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._baseclone/node_modules/lodash.forown/node_modules/lodash._objecttypes/index.js")
-},{"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._baseclone/node_modules/lodash.forown/node_modules/lodash._objecttypes/index.js":"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._baseclone/node_modules/lodash.forown/node_modules/lodash._objecttypes/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._basecreatecallback/index.js":[function(require,module,exports){
+},{"lodash._basecreatecallback":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/index.js","lodash._basemerge":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basemerge/index.js","lodash._getarray":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._getarray/index.js","lodash._releasearray":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._releasearray/index.js","lodash._slice":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._slice/index.js","lodash.isobject":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash.isobject/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/index.js":[function(require,module,exports){
 /**
  * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
  * Build: `lodash modularize modern exports="npm" -o ./npm/`
@@ -1048,7 +407,7 @@ function baseCreateCallback(func, thisArg, argCount) {
 
 module.exports = baseCreateCallback;
 
-},{"lodash._setbinddata":"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._basecreatecallback/node_modules/lodash._setbinddata/index.js","lodash.bind":"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._basecreatecallback/node_modules/lodash.bind/index.js","lodash.identity":"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._basecreatecallback/node_modules/lodash.identity/index.js","lodash.support":"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._basecreatecallback/node_modules/lodash.support/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._basecreatecallback/node_modules/lodash._setbinddata/index.js":[function(require,module,exports){
+},{"lodash._setbinddata":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash._setbinddata/index.js","lodash.bind":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash.bind/index.js","lodash.identity":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash.identity/index.js","lodash.support":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash.support/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash._setbinddata/index.js":[function(require,module,exports){
 /**
  * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
  * Build: `lodash modularize modern exports="npm" -o ./npm/`
@@ -1093,9 +452,43 @@ var setBindData = !defineProperty ? noop : function(func, value) {
 
 module.exports = setBindData;
 
-},{"lodash._isnative":"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._basecreatecallback/node_modules/lodash._setbinddata/node_modules/lodash._isnative/index.js","lodash.noop":"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._basecreatecallback/node_modules/lodash._setbinddata/node_modules/lodash.noop/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._basecreatecallback/node_modules/lodash._setbinddata/node_modules/lodash._isnative/index.js":[function(require,module,exports){
-module.exports=require("/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._baseclone/node_modules/lodash.isarray/node_modules/lodash._isnative/index.js")
-},{"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._baseclone/node_modules/lodash.isarray/node_modules/lodash._isnative/index.js":"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._baseclone/node_modules/lodash.isarray/node_modules/lodash._isnative/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._basecreatecallback/node_modules/lodash._setbinddata/node_modules/lodash.noop/index.js":[function(require,module,exports){
+},{"lodash._isnative":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash._setbinddata/node_modules/lodash._isnative/index.js","lodash.noop":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash._setbinddata/node_modules/lodash.noop/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash._setbinddata/node_modules/lodash._isnative/index.js":[function(require,module,exports){
+/**
+ * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
+ * Build: `lodash modularize modern exports="npm" -o ./npm/`
+ * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
+ * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
+ * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
+ * Available under MIT license <http://lodash.com/license>
+ */
+
+/** Used for native method references */
+var objectProto = Object.prototype;
+
+/** Used to resolve the internal [[Class]] of values */
+var toString = objectProto.toString;
+
+/** Used to detect if a method is native */
+var reNative = RegExp('^' +
+  String(toString)
+    .replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    .replace(/toString| for [^\]]+/g, '.*?') + '$'
+);
+
+/**
+ * Checks if `value` is a native function.
+ *
+ * @private
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if the `value` is a native function, else `false`.
+ */
+function isNative(value) {
+  return typeof value == 'function' && reNative.test(value);
+}
+
+module.exports = isNative;
+
+},{}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash._setbinddata/node_modules/lodash.noop/index.js":[function(require,module,exports){
 /**
  * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
  * Build: `lodash modularize modern exports="npm" -o ./npm/`
@@ -1123,7 +516,7 @@ function noop() {
 
 module.exports = noop;
 
-},{}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._basecreatecallback/node_modules/lodash.bind/index.js":[function(require,module,exports){
+},{}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash.bind/index.js":[function(require,module,exports){
 /**
  * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
  * Build: `lodash modularize modern exports="npm" -o ./npm/`
@@ -1165,7 +558,7 @@ function bind(func, thisArg) {
 
 module.exports = bind;
 
-},{"lodash._createwrapper":"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._basecreatecallback/node_modules/lodash.bind/node_modules/lodash._createwrapper/index.js","lodash._slice":"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._basecreatecallback/node_modules/lodash.bind/node_modules/lodash._slice/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._basecreatecallback/node_modules/lodash.bind/node_modules/lodash._createwrapper/index.js":[function(require,module,exports){
+},{"lodash._createwrapper":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash.bind/node_modules/lodash._createwrapper/index.js","lodash._slice":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._slice/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash.bind/node_modules/lodash._createwrapper/index.js":[function(require,module,exports){
 /**
  * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
  * Build: `lodash modularize modern exports="npm" -o ./npm/`
@@ -1273,7 +666,7 @@ function createWrapper(func, bitmask, partialArgs, partialRightArgs, thisArg, ar
 
 module.exports = createWrapper;
 
-},{"lodash._basebind":"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._basecreatecallback/node_modules/lodash.bind/node_modules/lodash._createwrapper/node_modules/lodash._basebind/index.js","lodash._basecreatewrapper":"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._basecreatecallback/node_modules/lodash.bind/node_modules/lodash._createwrapper/node_modules/lodash._basecreatewrapper/index.js","lodash._slice":"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._basecreatecallback/node_modules/lodash.bind/node_modules/lodash._slice/index.js","lodash.isfunction":"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._basecreatecallback/node_modules/lodash.bind/node_modules/lodash._createwrapper/node_modules/lodash.isfunction/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._basecreatecallback/node_modules/lodash.bind/node_modules/lodash._createwrapper/node_modules/lodash._basebind/index.js":[function(require,module,exports){
+},{"lodash._basebind":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash.bind/node_modules/lodash._createwrapper/node_modules/lodash._basebind/index.js","lodash._basecreatewrapper":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash.bind/node_modules/lodash._createwrapper/node_modules/lodash._basecreatewrapper/index.js","lodash._slice":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._slice/index.js","lodash.isfunction":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash.bind/node_modules/lodash._createwrapper/node_modules/lodash.isfunction/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash.bind/node_modules/lodash._createwrapper/node_modules/lodash._basebind/index.js":[function(require,module,exports){
 /**
  * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
  * Build: `lodash modularize modern exports="npm" -o ./npm/`
@@ -1337,7 +730,7 @@ function baseBind(bindData) {
 
 module.exports = baseBind;
 
-},{"lodash._basecreate":"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._basecreatecallback/node_modules/lodash.bind/node_modules/lodash._createwrapper/node_modules/lodash._basebind/node_modules/lodash._basecreate/index.js","lodash._setbinddata":"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._basecreatecallback/node_modules/lodash._setbinddata/index.js","lodash._slice":"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._basecreatecallback/node_modules/lodash.bind/node_modules/lodash._slice/index.js","lodash.isobject":"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._basecreatecallback/node_modules/lodash.bind/node_modules/lodash._createwrapper/node_modules/lodash._basebind/node_modules/lodash.isobject/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._basecreatecallback/node_modules/lodash.bind/node_modules/lodash._createwrapper/node_modules/lodash._basebind/node_modules/lodash._basecreate/index.js":[function(require,module,exports){
+},{"lodash._basecreate":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash.bind/node_modules/lodash._createwrapper/node_modules/lodash._basebind/node_modules/lodash._basecreate/index.js","lodash._setbinddata":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash._setbinddata/index.js","lodash._slice":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._slice/index.js","lodash.isobject":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash.isobject/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash.bind/node_modules/lodash._createwrapper/node_modules/lodash._basebind/node_modules/lodash._basecreate/index.js":[function(require,module,exports){
 (function (global){
 /**
  * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
@@ -1383,13 +776,12 @@ if (!nativeCreate) {
 module.exports = baseCreate;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"lodash._isnative":"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._basecreatecallback/node_modules/lodash.bind/node_modules/lodash._createwrapper/node_modules/lodash._basebind/node_modules/lodash._basecreate/node_modules/lodash._isnative/index.js","lodash.isobject":"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._basecreatecallback/node_modules/lodash.bind/node_modules/lodash._createwrapper/node_modules/lodash._basebind/node_modules/lodash.isobject/index.js","lodash.noop":"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._basecreatecallback/node_modules/lodash.bind/node_modules/lodash._createwrapper/node_modules/lodash._basebind/node_modules/lodash._basecreate/node_modules/lodash.noop/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._basecreatecallback/node_modules/lodash.bind/node_modules/lodash._createwrapper/node_modules/lodash._basebind/node_modules/lodash._basecreate/node_modules/lodash._isnative/index.js":[function(require,module,exports){
-module.exports=require("/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._basecreatecallback/node_modules/lodash._setbinddata/node_modules/lodash._isnative/index.js")
-},{"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._basecreatecallback/node_modules/lodash._setbinddata/node_modules/lodash._isnative/index.js":"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._basecreatecallback/node_modules/lodash._setbinddata/node_modules/lodash._isnative/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._basecreatecallback/node_modules/lodash.bind/node_modules/lodash._createwrapper/node_modules/lodash._basebind/node_modules/lodash._basecreate/node_modules/lodash.noop/index.js":[function(require,module,exports){
-module.exports=require("/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._basecreatecallback/node_modules/lodash._setbinddata/node_modules/lodash.noop/index.js")
-},{"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._basecreatecallback/node_modules/lodash._setbinddata/node_modules/lodash.noop/index.js":"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._basecreatecallback/node_modules/lodash._setbinddata/node_modules/lodash.noop/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._basecreatecallback/node_modules/lodash.bind/node_modules/lodash._createwrapper/node_modules/lodash._basebind/node_modules/lodash.isobject/index.js":[function(require,module,exports){
-module.exports=require("/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._baseclone/node_modules/lodash.isobject/index.js")
-},{"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._baseclone/node_modules/lodash.isobject/index.js":"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._baseclone/node_modules/lodash.isobject/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._basecreatecallback/node_modules/lodash.bind/node_modules/lodash._createwrapper/node_modules/lodash._basecreatewrapper/index.js":[function(require,module,exports){
+
+},{"lodash._isnative":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash.bind/node_modules/lodash._createwrapper/node_modules/lodash._basebind/node_modules/lodash._basecreate/node_modules/lodash._isnative/index.js","lodash.isobject":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash.isobject/index.js","lodash.noop":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash.bind/node_modules/lodash._createwrapper/node_modules/lodash._basebind/node_modules/lodash._basecreate/node_modules/lodash.noop/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash.bind/node_modules/lodash._createwrapper/node_modules/lodash._basebind/node_modules/lodash._basecreate/node_modules/lodash._isnative/index.js":[function(require,module,exports){
+module.exports=require("/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash._setbinddata/node_modules/lodash._isnative/index.js")
+},{"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash._setbinddata/node_modules/lodash._isnative/index.js":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash._setbinddata/node_modules/lodash._isnative/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash.bind/node_modules/lodash._createwrapper/node_modules/lodash._basebind/node_modules/lodash._basecreate/node_modules/lodash.noop/index.js":[function(require,module,exports){
+module.exports=require("/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash._setbinddata/node_modules/lodash.noop/index.js")
+},{"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash._setbinddata/node_modules/lodash.noop/index.js":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash._setbinddata/node_modules/lodash.noop/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash.bind/node_modules/lodash._createwrapper/node_modules/lodash._basecreatewrapper/index.js":[function(require,module,exports){
 /**
  * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
  * Build: `lodash modularize modern exports="npm" -o ./npm/`
@@ -1469,11 +861,58 @@ function baseCreateWrapper(bindData) {
 
 module.exports = baseCreateWrapper;
 
-},{"lodash._basecreate":"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._basecreatecallback/node_modules/lodash.bind/node_modules/lodash._createwrapper/node_modules/lodash._basecreatewrapper/node_modules/lodash._basecreate/index.js","lodash._setbinddata":"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._basecreatecallback/node_modules/lodash._setbinddata/index.js","lodash._slice":"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._basecreatecallback/node_modules/lodash.bind/node_modules/lodash._slice/index.js","lodash.isobject":"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._basecreatecallback/node_modules/lodash.bind/node_modules/lodash._createwrapper/node_modules/lodash._basecreatewrapper/node_modules/lodash.isobject/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._basecreatecallback/node_modules/lodash.bind/node_modules/lodash._createwrapper/node_modules/lodash._basecreatewrapper/node_modules/lodash._basecreate/index.js":[function(require,module,exports){
-module.exports=require("/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._basecreatecallback/node_modules/lodash.bind/node_modules/lodash._createwrapper/node_modules/lodash._basebind/node_modules/lodash._basecreate/index.js")
-},{"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._basecreatecallback/node_modules/lodash.bind/node_modules/lodash._createwrapper/node_modules/lodash._basebind/node_modules/lodash._basecreate/index.js":"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._basecreatecallback/node_modules/lodash.bind/node_modules/lodash._createwrapper/node_modules/lodash._basebind/node_modules/lodash._basecreate/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._basecreatecallback/node_modules/lodash.bind/node_modules/lodash._createwrapper/node_modules/lodash._basecreatewrapper/node_modules/lodash.isobject/index.js":[function(require,module,exports){
-module.exports=require("/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._basecreatecallback/node_modules/lodash.bind/node_modules/lodash._createwrapper/node_modules/lodash._basebind/node_modules/lodash.isobject/index.js")
-},{"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._basecreatecallback/node_modules/lodash.bind/node_modules/lodash._createwrapper/node_modules/lodash._basebind/node_modules/lodash.isobject/index.js":"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._basecreatecallback/node_modules/lodash.bind/node_modules/lodash._createwrapper/node_modules/lodash._basebind/node_modules/lodash.isobject/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._basecreatecallback/node_modules/lodash.bind/node_modules/lodash._createwrapper/node_modules/lodash.isfunction/index.js":[function(require,module,exports){
+},{"lodash._basecreate":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash.bind/node_modules/lodash._createwrapper/node_modules/lodash._basecreatewrapper/node_modules/lodash._basecreate/index.js","lodash._setbinddata":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash._setbinddata/index.js","lodash._slice":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._slice/index.js","lodash.isobject":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash.isobject/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash.bind/node_modules/lodash._createwrapper/node_modules/lodash._basecreatewrapper/node_modules/lodash._basecreate/index.js":[function(require,module,exports){
+(function (global){
+/**
+ * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
+ * Build: `lodash modularize modern exports="npm" -o ./npm/`
+ * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
+ * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
+ * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
+ * Available under MIT license <http://lodash.com/license>
+ */
+var isNative = require('lodash._isnative'),
+    isObject = require('lodash.isobject'),
+    noop = require('lodash.noop');
+
+/* Native method shortcuts for methods with the same name as other `lodash` methods */
+var nativeCreate = isNative(nativeCreate = Object.create) && nativeCreate;
+
+/**
+ * The base implementation of `_.create` without support for assigning
+ * properties to the created object.
+ *
+ * @private
+ * @param {Object} prototype The object to inherit from.
+ * @returns {Object} Returns the new object.
+ */
+function baseCreate(prototype, properties) {
+  return isObject(prototype) ? nativeCreate(prototype) : {};
+}
+// fallback for browsers without `Object.create`
+if (!nativeCreate) {
+  baseCreate = (function() {
+    function Object() {}
+    return function(prototype) {
+      if (isObject(prototype)) {
+        Object.prototype = prototype;
+        var result = new Object;
+        Object.prototype = null;
+      }
+      return result || global.Object();
+    };
+  }());
+}
+
+module.exports = baseCreate;
+
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+
+},{"lodash._isnative":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash.bind/node_modules/lodash._createwrapper/node_modules/lodash._basecreatewrapper/node_modules/lodash._basecreate/node_modules/lodash._isnative/index.js","lodash.isobject":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash.isobject/index.js","lodash.noop":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash.bind/node_modules/lodash._createwrapper/node_modules/lodash._basecreatewrapper/node_modules/lodash._basecreate/node_modules/lodash.noop/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash.bind/node_modules/lodash._createwrapper/node_modules/lodash._basecreatewrapper/node_modules/lodash._basecreate/node_modules/lodash._isnative/index.js":[function(require,module,exports){
+module.exports=require("/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash._setbinddata/node_modules/lodash._isnative/index.js")
+},{"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash._setbinddata/node_modules/lodash._isnative/index.js":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash._setbinddata/node_modules/lodash._isnative/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash.bind/node_modules/lodash._createwrapper/node_modules/lodash._basecreatewrapper/node_modules/lodash._basecreate/node_modules/lodash.noop/index.js":[function(require,module,exports){
+module.exports=require("/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash._setbinddata/node_modules/lodash.noop/index.js")
+},{"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash._setbinddata/node_modules/lodash.noop/index.js":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash._setbinddata/node_modules/lodash.noop/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash.bind/node_modules/lodash._createwrapper/node_modules/lodash.isfunction/index.js":[function(require,module,exports){
 /**
  * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
  * Build: `lodash modularize modern exports="npm" -o ./npm/`
@@ -1502,9 +941,7 @@ function isFunction(value) {
 
 module.exports = isFunction;
 
-},{}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._basecreatecallback/node_modules/lodash.bind/node_modules/lodash._slice/index.js":[function(require,module,exports){
-module.exports=require("/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._baseclone/node_modules/lodash._slice/index.js")
-},{"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._baseclone/node_modules/lodash._slice/index.js":"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._baseclone/node_modules/lodash._slice/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._basecreatecallback/node_modules/lodash.identity/index.js":[function(require,module,exports){
+},{}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash.identity/index.js":[function(require,module,exports){
 /**
  * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
  * Build: `lodash modularize modern exports="npm" -o ./npm/`
@@ -1534,7 +971,7 @@ function identity(value) {
 
 module.exports = identity;
 
-},{}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._basecreatecallback/node_modules/lodash.support/index.js":[function(require,module,exports){
+},{}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash.support/index.js":[function(require,module,exports){
 (function (global){
 /**
  * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
@@ -1578,110 +1015,10 @@ support.funcNames = typeof Function.name == 'string';
 module.exports = support;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"lodash._isnative":"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._basecreatecallback/node_modules/lodash.support/node_modules/lodash._isnative/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._basecreatecallback/node_modules/lodash.support/node_modules/lodash._isnative/index.js":[function(require,module,exports){
-module.exports=require("/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._basecreatecallback/node_modules/lodash.bind/node_modules/lodash._createwrapper/node_modules/lodash._basebind/node_modules/lodash._basecreate/node_modules/lodash._isnative/index.js")
-},{"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._basecreatecallback/node_modules/lodash.bind/node_modules/lodash._createwrapper/node_modules/lodash._basebind/node_modules/lodash._basecreate/node_modules/lodash._isnative/index.js":"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._basecreatecallback/node_modules/lodash.bind/node_modules/lodash._createwrapper/node_modules/lodash._basebind/node_modules/lodash._basecreate/node_modules/lodash._isnative/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/index.js":[function(require,module,exports){
-/**
- * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
- * Build: `lodash modularize modern exports="npm" -o ./npm/`
- * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
- * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
- * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
- * Available under MIT license <http://lodash.com/license>
- */
-var baseCreateCallback = require('lodash._basecreatecallback'),
-    baseMerge = require('lodash._basemerge'),
-    getArray = require('lodash._getarray'),
-    isObject = require('lodash.isobject'),
-    releaseArray = require('lodash._releasearray'),
-    slice = require('lodash._slice');
 
-/**
- * Recursively merges own enumerable properties of the source object(s), that
- * don't resolve to `undefined` into the destination object. Subsequent sources
- * will overwrite property assignments of previous sources. If a callback is
- * provided it will be executed to produce the merged values of the destination
- * and source properties. If the callback returns `undefined` merging will
- * be handled by the method instead. The callback is bound to `thisArg` and
- * invoked with two arguments; (objectValue, sourceValue).
- *
- * @static
- * @memberOf _
- * @category Objects
- * @param {Object} object The destination object.
- * @param {...Object} [source] The source objects.
- * @param {Function} [callback] The function to customize merging properties.
- * @param {*} [thisArg] The `this` binding of `callback`.
- * @returns {Object} Returns the destination object.
- * @example
- *
- * var names = {
- *   'characters': [
- *     { 'name': 'barney' },
- *     { 'name': 'fred' }
- *   ]
- * };
- *
- * var ages = {
- *   'characters': [
- *     { 'age': 36 },
- *     { 'age': 40 }
- *   ]
- * };
- *
- * _.merge(names, ages);
- * // => { 'characters': [{ 'name': 'barney', 'age': 36 }, { 'name': 'fred', 'age': 40 }] }
- *
- * var food = {
- *   'fruits': ['apple'],
- *   'vegetables': ['beet']
- * };
- *
- * var otherFood = {
- *   'fruits': ['banana'],
- *   'vegetables': ['carrot']
- * };
- *
- * _.merge(food, otherFood, function(a, b) {
- *   return _.isArray(a) ? a.concat(b) : undefined;
- * });
- * // => { 'fruits': ['apple', 'banana'], 'vegetables': ['beet', 'carrot] }
- */
-function merge(object) {
-  var args = arguments,
-      length = 2;
-
-  if (!isObject(object)) {
-    return object;
-  }
-  // allows working with `_.reduce` and `_.reduceRight` without using
-  // their `index` and `collection` arguments
-  if (typeof args[2] != 'number') {
-    length = args.length;
-  }
-  if (length > 3 && typeof args[length - 2] == 'function') {
-    var callback = baseCreateCallback(args[--length - 1], args[length--], 2);
-  } else if (length > 2 && typeof args[length - 1] == 'function') {
-    callback = args[--length];
-  }
-  var sources = slice(arguments, 1, length),
-      index = -1,
-      stackA = getArray(),
-      stackB = getArray();
-
-  while (++index < length) {
-    baseMerge(object, sources[index], callback, stackA, stackB);
-  }
-  releaseArray(stackA);
-  releaseArray(stackB);
-  return object;
-}
-
-module.exports = merge;
-
-},{"lodash._basecreatecallback":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/index.js","lodash._basemerge":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basemerge/index.js","lodash._getarray":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._getarray/index.js","lodash._releasearray":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._releasearray/index.js","lodash._slice":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._slice/index.js","lodash.isobject":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash.isobject/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/index.js":[function(require,module,exports){
-module.exports=require("/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._basecreatecallback/index.js")
-},{"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._basecreatecallback/index.js":"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._basecreatecallback/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basemerge/index.js":[function(require,module,exports){
+},{"lodash._isnative":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash.support/node_modules/lodash._isnative/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash.support/node_modules/lodash._isnative/index.js":[function(require,module,exports){
+module.exports=require("/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash._setbinddata/node_modules/lodash._isnative/index.js")
+},{"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash._setbinddata/node_modules/lodash._isnative/index.js":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash._setbinddata/node_modules/lodash._isnative/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basemerge/index.js":[function(require,module,exports){
 /**
  * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
  * Build: `lodash modularize modern exports="npm" -o ./npm/`
@@ -1763,12 +1100,266 @@ function baseMerge(object, source, callback, stackA, stackB) {
 module.exports = baseMerge;
 
 },{"lodash.foreach":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basemerge/node_modules/lodash.foreach/index.js","lodash.forown":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basemerge/node_modules/lodash.forown/index.js","lodash.isarray":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basemerge/node_modules/lodash.isarray/index.js","lodash.isplainobject":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basemerge/node_modules/lodash.isplainobject/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basemerge/node_modules/lodash.foreach/index.js":[function(require,module,exports){
-module.exports=require("/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._baseclone/node_modules/lodash.foreach/index.js")
-},{"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._baseclone/node_modules/lodash.foreach/index.js":"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._baseclone/node_modules/lodash.foreach/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basemerge/node_modules/lodash.forown/index.js":[function(require,module,exports){
-module.exports=require("/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._baseclone/node_modules/lodash.forown/index.js")
-},{"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._baseclone/node_modules/lodash.forown/index.js":"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._baseclone/node_modules/lodash.forown/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basemerge/node_modules/lodash.isarray/index.js":[function(require,module,exports){
-module.exports=require("/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._baseclone/node_modules/lodash.isarray/index.js")
-},{"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._baseclone/node_modules/lodash.isarray/index.js":"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._baseclone/node_modules/lodash.isarray/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basemerge/node_modules/lodash.isplainobject/index.js":[function(require,module,exports){
+/**
+ * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
+ * Build: `lodash modularize modern exports="npm" -o ./npm/`
+ * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
+ * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
+ * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
+ * Available under MIT license <http://lodash.com/license>
+ */
+var baseCreateCallback = require('lodash._basecreatecallback'),
+    forOwn = require('lodash.forown');
+
+/**
+ * Iterates over elements of a collection, executing the callback for each
+ * element. The callback is bound to `thisArg` and invoked with three arguments;
+ * (value, index|key, collection). Callbacks may exit iteration early by
+ * explicitly returning `false`.
+ *
+ * Note: As with other "Collections" methods, objects with a `length` property
+ * are iterated like arrays. To avoid this behavior `_.forIn` or `_.forOwn`
+ * may be used for object iteration.
+ *
+ * @static
+ * @memberOf _
+ * @alias each
+ * @category Collections
+ * @param {Array|Object|string} collection The collection to iterate over.
+ * @param {Function} [callback=identity] The function called per iteration.
+ * @param {*} [thisArg] The `this` binding of `callback`.
+ * @returns {Array|Object|string} Returns `collection`.
+ * @example
+ *
+ * _([1, 2, 3]).forEach(function(num) { console.log(num); }).join(',');
+ * // => logs each number and returns '1,2,3'
+ *
+ * _.forEach({ 'one': 1, 'two': 2, 'three': 3 }, function(num) { console.log(num); });
+ * // => logs each number and returns the object (property order is not guaranteed across environments)
+ */
+function forEach(collection, callback, thisArg) {
+  var index = -1,
+      length = collection ? collection.length : 0;
+
+  callback = callback && typeof thisArg == 'undefined' ? callback : baseCreateCallback(callback, thisArg, 3);
+  if (typeof length == 'number') {
+    while (++index < length) {
+      if (callback(collection[index], index, collection) === false) {
+        break;
+      }
+    }
+  } else {
+    forOwn(collection, callback);
+  }
+  return collection;
+}
+
+module.exports = forEach;
+
+},{"lodash._basecreatecallback":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/index.js","lodash.forown":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basemerge/node_modules/lodash.forown/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basemerge/node_modules/lodash.forown/index.js":[function(require,module,exports){
+/**
+ * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
+ * Build: `lodash modularize modern exports="npm" -o ./npm/`
+ * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
+ * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
+ * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
+ * Available under MIT license <http://lodash.com/license>
+ */
+var baseCreateCallback = require('lodash._basecreatecallback'),
+    keys = require('lodash.keys'),
+    objectTypes = require('lodash._objecttypes');
+
+/**
+ * Iterates over own enumerable properties of an object, executing the callback
+ * for each property. The callback is bound to `thisArg` and invoked with three
+ * arguments; (value, key, object). Callbacks may exit iteration early by
+ * explicitly returning `false`.
+ *
+ * @static
+ * @memberOf _
+ * @type Function
+ * @category Objects
+ * @param {Object} object The object to iterate over.
+ * @param {Function} [callback=identity] The function called per iteration.
+ * @param {*} [thisArg] The `this` binding of `callback`.
+ * @returns {Object} Returns `object`.
+ * @example
+ *
+ * _.forOwn({ '0': 'zero', '1': 'one', 'length': 2 }, function(num, key) {
+ *   console.log(key);
+ * });
+ * // => logs '0', '1', and 'length' (property order is not guaranteed across environments)
+ */
+var forOwn = function(collection, callback, thisArg) {
+  var index, iterable = collection, result = iterable;
+  if (!iterable) return result;
+  if (!objectTypes[typeof iterable]) return result;
+  callback = callback && typeof thisArg == 'undefined' ? callback : baseCreateCallback(callback, thisArg, 3);
+    var ownIndex = -1,
+        ownProps = objectTypes[typeof iterable] && keys(iterable),
+        length = ownProps ? ownProps.length : 0;
+
+    while (++ownIndex < length) {
+      index = ownProps[ownIndex];
+      if (callback(iterable[index], index, collection) === false) return result;
+    }
+  return result
+};
+
+module.exports = forOwn;
+
+},{"lodash._basecreatecallback":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/index.js","lodash._objecttypes":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basemerge/node_modules/lodash.forown/node_modules/lodash._objecttypes/index.js","lodash.keys":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basemerge/node_modules/lodash.forown/node_modules/lodash.keys/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basemerge/node_modules/lodash.forown/node_modules/lodash._objecttypes/index.js":[function(require,module,exports){
+/**
+ * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
+ * Build: `lodash modularize modern exports="npm" -o ./npm/`
+ * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
+ * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
+ * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
+ * Available under MIT license <http://lodash.com/license>
+ */
+
+/** Used to determine if values are of the language type Object */
+var objectTypes = {
+  'boolean': false,
+  'function': true,
+  'object': true,
+  'number': false,
+  'string': false,
+  'undefined': false
+};
+
+module.exports = objectTypes;
+
+},{}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basemerge/node_modules/lodash.forown/node_modules/lodash.keys/index.js":[function(require,module,exports){
+/**
+ * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
+ * Build: `lodash modularize modern exports="npm" -o ./npm/`
+ * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
+ * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
+ * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
+ * Available under MIT license <http://lodash.com/license>
+ */
+var isNative = require('lodash._isnative'),
+    isObject = require('lodash.isobject'),
+    shimKeys = require('lodash._shimkeys');
+
+/* Native method shortcuts for methods with the same name as other `lodash` methods */
+var nativeKeys = isNative(nativeKeys = Object.keys) && nativeKeys;
+
+/**
+ * Creates an array composed of the own enumerable property names of an object.
+ *
+ * @static
+ * @memberOf _
+ * @category Objects
+ * @param {Object} object The object to inspect.
+ * @returns {Array} Returns an array of property names.
+ * @example
+ *
+ * _.keys({ 'one': 1, 'two': 2, 'three': 3 });
+ * // => ['one', 'two', 'three'] (property order is not guaranteed across environments)
+ */
+var keys = !nativeKeys ? shimKeys : function(object) {
+  if (!isObject(object)) {
+    return [];
+  }
+  return nativeKeys(object);
+};
+
+module.exports = keys;
+
+},{"lodash._isnative":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basemerge/node_modules/lodash.forown/node_modules/lodash.keys/node_modules/lodash._isnative/index.js","lodash._shimkeys":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basemerge/node_modules/lodash.forown/node_modules/lodash.keys/node_modules/lodash._shimkeys/index.js","lodash.isobject":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash.isobject/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basemerge/node_modules/lodash.forown/node_modules/lodash.keys/node_modules/lodash._isnative/index.js":[function(require,module,exports){
+module.exports=require("/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash._setbinddata/node_modules/lodash._isnative/index.js")
+},{"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash._setbinddata/node_modules/lodash._isnative/index.js":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash._setbinddata/node_modules/lodash._isnative/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basemerge/node_modules/lodash.forown/node_modules/lodash.keys/node_modules/lodash._shimkeys/index.js":[function(require,module,exports){
+/**
+ * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
+ * Build: `lodash modularize modern exports="npm" -o ./npm/`
+ * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
+ * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
+ * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
+ * Available under MIT license <http://lodash.com/license>
+ */
+var objectTypes = require('lodash._objecttypes');
+
+/** Used for native method references */
+var objectProto = Object.prototype;
+
+/** Native method shortcuts */
+var hasOwnProperty = objectProto.hasOwnProperty;
+
+/**
+ * A fallback implementation of `Object.keys` which produces an array of the
+ * given object's own enumerable property names.
+ *
+ * @private
+ * @type Function
+ * @param {Object} object The object to inspect.
+ * @returns {Array} Returns an array of property names.
+ */
+var shimKeys = function(object) {
+  var index, iterable = object, result = [];
+  if (!iterable) return result;
+  if (!(objectTypes[typeof object])) return result;
+    for (index in iterable) {
+      if (hasOwnProperty.call(iterable, index)) {
+        result.push(index);
+      }
+    }
+  return result
+};
+
+module.exports = shimKeys;
+
+},{"lodash._objecttypes":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basemerge/node_modules/lodash.forown/node_modules/lodash._objecttypes/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basemerge/node_modules/lodash.isarray/index.js":[function(require,module,exports){
+/**
+ * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
+ * Build: `lodash modularize modern exports="npm" -o ./npm/`
+ * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
+ * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
+ * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
+ * Available under MIT license <http://lodash.com/license>
+ */
+var isNative = require('lodash._isnative');
+
+/** `Object#toString` result shortcuts */
+var arrayClass = '[object Array]';
+
+/** Used for native method references */
+var objectProto = Object.prototype;
+
+/** Used to resolve the internal [[Class]] of values */
+var toString = objectProto.toString;
+
+/* Native method shortcuts for methods with the same name as other `lodash` methods */
+var nativeIsArray = isNative(nativeIsArray = Array.isArray) && nativeIsArray;
+
+/**
+ * Checks if `value` is an array.
+ *
+ * @static
+ * @memberOf _
+ * @type Function
+ * @category Objects
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if the `value` is an array, else `false`.
+ * @example
+ *
+ * (function() { return _.isArray(arguments); })();
+ * // => false
+ *
+ * _.isArray([1, 2, 3]);
+ * // => true
+ */
+var isArray = nativeIsArray || function(value) {
+  return value && typeof value == 'object' && typeof value.length == 'number' &&
+    toString.call(value) == arrayClass || false;
+};
+
+module.exports = isArray;
+
+},{"lodash._isnative":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basemerge/node_modules/lodash.isarray/node_modules/lodash._isnative/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basemerge/node_modules/lodash.isarray/node_modules/lodash._isnative/index.js":[function(require,module,exports){
+module.exports=require("/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash._setbinddata/node_modules/lodash._isnative/index.js")
+},{"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash._setbinddata/node_modules/lodash._isnative/index.js":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash._setbinddata/node_modules/lodash._isnative/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basemerge/node_modules/lodash.isplainobject/index.js":[function(require,module,exports){
 /**
  * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
  * Build: `lodash modularize modern exports="npm" -o ./npm/`
@@ -1831,8 +1422,8 @@ var isPlainObject = !getPrototypeOf ? shimIsPlainObject : function(value) {
 module.exports = isPlainObject;
 
 },{"lodash._isnative":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basemerge/node_modules/lodash.isplainobject/node_modules/lodash._isnative/index.js","lodash._shimisplainobject":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basemerge/node_modules/lodash.isplainobject/node_modules/lodash._shimisplainobject/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basemerge/node_modules/lodash.isplainobject/node_modules/lodash._isnative/index.js":[function(require,module,exports){
-module.exports=require("/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._basecreatecallback/node_modules/lodash.support/node_modules/lodash._isnative/index.js")
-},{"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._basecreatecallback/node_modules/lodash.support/node_modules/lodash._isnative/index.js":"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._basecreatecallback/node_modules/lodash.support/node_modules/lodash._isnative/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basemerge/node_modules/lodash.isplainobject/node_modules/lodash._shimisplainobject/index.js":[function(require,module,exports){
+module.exports=require("/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash._setbinddata/node_modules/lodash._isnative/index.js")
+},{"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash._setbinddata/node_modules/lodash._isnative/index.js":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash._setbinddata/node_modules/lodash._isnative/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basemerge/node_modules/lodash.isplainobject/node_modules/lodash._shimisplainobject/index.js":[function(require,module,exports){
 /**
  * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
  * Build: `lodash modularize modern exports="npm" -o ./npm/`
@@ -1943,18 +1534,175 @@ var forIn = function(collection, callback, thisArg) {
 module.exports = forIn;
 
 },{"lodash._basecreatecallback":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/index.js","lodash._objecttypes":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basemerge/node_modules/lodash.isplainobject/node_modules/lodash._shimisplainobject/node_modules/lodash.forin/node_modules/lodash._objecttypes/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basemerge/node_modules/lodash.isplainobject/node_modules/lodash._shimisplainobject/node_modules/lodash.forin/node_modules/lodash._objecttypes/index.js":[function(require,module,exports){
-module.exports=require("/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._baseclone/node_modules/lodash.isobject/node_modules/lodash._objecttypes/index.js")
-},{"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._baseclone/node_modules/lodash.isobject/node_modules/lodash._objecttypes/index.js":"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._baseclone/node_modules/lodash.isobject/node_modules/lodash._objecttypes/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basemerge/node_modules/lodash.isplainobject/node_modules/lodash._shimisplainobject/node_modules/lodash.isfunction/index.js":[function(require,module,exports){
-module.exports=require("/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._basecreatecallback/node_modules/lodash.bind/node_modules/lodash._createwrapper/node_modules/lodash.isfunction/index.js")
-},{"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._basecreatecallback/node_modules/lodash.bind/node_modules/lodash._createwrapper/node_modules/lodash.isfunction/index.js":"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._basecreatecallback/node_modules/lodash.bind/node_modules/lodash._createwrapper/node_modules/lodash.isfunction/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._getarray/index.js":[function(require,module,exports){
-module.exports=require("/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._baseclone/node_modules/lodash._getarray/index.js")
-},{"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._baseclone/node_modules/lodash._getarray/index.js":"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._baseclone/node_modules/lodash._getarray/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._releasearray/index.js":[function(require,module,exports){
-module.exports=require("/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._baseclone/node_modules/lodash._releasearray/index.js")
-},{"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._baseclone/node_modules/lodash._releasearray/index.js":"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._baseclone/node_modules/lodash._releasearray/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._slice/index.js":[function(require,module,exports){
-module.exports=require("/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._basecreatecallback/node_modules/lodash.bind/node_modules/lodash._slice/index.js")
-},{"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._basecreatecallback/node_modules/lodash.bind/node_modules/lodash._slice/index.js":"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._basecreatecallback/node_modules/lodash.bind/node_modules/lodash._slice/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash.isobject/index.js":[function(require,module,exports){
-module.exports=require("/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._basecreatecallback/node_modules/lodash.bind/node_modules/lodash._createwrapper/node_modules/lodash._basecreatewrapper/node_modules/lodash.isobject/index.js")
-},{"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._basecreatecallback/node_modules/lodash.bind/node_modules/lodash._createwrapper/node_modules/lodash._basecreatewrapper/node_modules/lodash.isobject/index.js":"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/node_modules/lodash._basecreatecallback/node_modules/lodash.bind/node_modules/lodash._createwrapper/node_modules/lodash._basecreatewrapper/node_modules/lodash.isobject/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/index.js":[function(require,module,exports){
+module.exports=require("/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basemerge/node_modules/lodash.forown/node_modules/lodash._objecttypes/index.js")
+},{"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basemerge/node_modules/lodash.forown/node_modules/lodash._objecttypes/index.js":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basemerge/node_modules/lodash.forown/node_modules/lodash._objecttypes/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basemerge/node_modules/lodash.isplainobject/node_modules/lodash._shimisplainobject/node_modules/lodash.isfunction/index.js":[function(require,module,exports){
+module.exports=require("/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash.bind/node_modules/lodash._createwrapper/node_modules/lodash.isfunction/index.js")
+},{"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash.bind/node_modules/lodash._createwrapper/node_modules/lodash.isfunction/index.js":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basecreatecallback/node_modules/lodash.bind/node_modules/lodash._createwrapper/node_modules/lodash.isfunction/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._getarray/index.js":[function(require,module,exports){
+/**
+ * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
+ * Build: `lodash modularize modern exports="npm" -o ./npm/`
+ * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
+ * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
+ * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
+ * Available under MIT license <http://lodash.com/license>
+ */
+var arrayPool = require('lodash._arraypool');
+
+/**
+ * Gets an array from the array pool or creates a new one if the pool is empty.
+ *
+ * @private
+ * @returns {Array} The array from the pool.
+ */
+function getArray() {
+  return arrayPool.pop() || [];
+}
+
+module.exports = getArray;
+
+},{"lodash._arraypool":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._getarray/node_modules/lodash._arraypool/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._getarray/node_modules/lodash._arraypool/index.js":[function(require,module,exports){
+/**
+ * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
+ * Build: `lodash modularize modern exports="npm" -o ./npm/`
+ * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
+ * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
+ * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
+ * Available under MIT license <http://lodash.com/license>
+ */
+
+/** Used to pool arrays and objects used internally */
+var arrayPool = [];
+
+module.exports = arrayPool;
+
+},{}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._releasearray/index.js":[function(require,module,exports){
+/**
+ * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
+ * Build: `lodash modularize modern exports="npm" -o ./npm/`
+ * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
+ * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
+ * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
+ * Available under MIT license <http://lodash.com/license>
+ */
+var arrayPool = require('lodash._arraypool'),
+    maxPoolSize = require('lodash._maxpoolsize');
+
+/**
+ * Releases the given array back to the array pool.
+ *
+ * @private
+ * @param {Array} [array] The array to release.
+ */
+function releaseArray(array) {
+  array.length = 0;
+  if (arrayPool.length < maxPoolSize) {
+    arrayPool.push(array);
+  }
+}
+
+module.exports = releaseArray;
+
+},{"lodash._arraypool":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._releasearray/node_modules/lodash._arraypool/index.js","lodash._maxpoolsize":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._releasearray/node_modules/lodash._maxpoolsize/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._releasearray/node_modules/lodash._arraypool/index.js":[function(require,module,exports){
+module.exports=require("/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._getarray/node_modules/lodash._arraypool/index.js")
+},{"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._getarray/node_modules/lodash._arraypool/index.js":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._getarray/node_modules/lodash._arraypool/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._releasearray/node_modules/lodash._maxpoolsize/index.js":[function(require,module,exports){
+/**
+ * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
+ * Build: `lodash modularize modern exports="npm" -o ./npm/`
+ * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
+ * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
+ * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
+ * Available under MIT license <http://lodash.com/license>
+ */
+
+/** Used as the max size of the `arrayPool` and `objectPool` */
+var maxPoolSize = 40;
+
+module.exports = maxPoolSize;
+
+},{}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._slice/index.js":[function(require,module,exports){
+/**
+ * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
+ * Build: `lodash modularize modern exports="npm" -o ./npm/`
+ * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
+ * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
+ * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
+ * Available under MIT license <http://lodash.com/license>
+ */
+
+/**
+ * Slices the `collection` from the `start` index up to, but not including,
+ * the `end` index.
+ *
+ * Note: This function is used instead of `Array#slice` to support node lists
+ * in IE < 9 and to ensure dense arrays are returned.
+ *
+ * @private
+ * @param {Array|Object|string} collection The collection to slice.
+ * @param {number} start The start index.
+ * @param {number} end The end index.
+ * @returns {Array} Returns the new array.
+ */
+function slice(array, start, end) {
+  start || (start = 0);
+  if (typeof end == 'undefined') {
+    end = array ? array.length : 0;
+  }
+  var index = -1,
+      length = end - start || 0,
+      result = Array(length < 0 ? 0 : length);
+
+  while (++index < length) {
+    result[index] = array[start + index];
+  }
+  return result;
+}
+
+module.exports = slice;
+
+},{}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash.isobject/index.js":[function(require,module,exports){
+/**
+ * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
+ * Build: `lodash modularize modern exports="npm" -o ./npm/`
+ * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
+ * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
+ * Copyright 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
+ * Available under MIT license <http://lodash.com/license>
+ */
+var objectTypes = require('lodash._objecttypes');
+
+/**
+ * Checks if `value` is the language type of Object.
+ * (e.g. arrays, functions, objects, regexes, `new Number(0)`, and `new String('')`)
+ *
+ * @static
+ * @memberOf _
+ * @category Objects
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if the `value` is an object, else `false`.
+ * @example
+ *
+ * _.isObject({});
+ * // => true
+ *
+ * _.isObject([1, 2, 3]);
+ * // => true
+ *
+ * _.isObject(1);
+ * // => false
+ */
+function isObject(value) {
+  // check if the value is the ECMAScript language type of Object
+  // http://es5.github.io/#x8
+  // and avoid a V8 bug
+  // http://code.google.com/p/v8/issues/detail?id=2291
+  return !!(value && objectTypes[typeof value]);
+}
+
+module.exports = isObject;
+
+},{"lodash._objecttypes":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash.isobject/node_modules/lodash._objecttypes/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash.isobject/node_modules/lodash._objecttypes/index.js":[function(require,module,exports){
+module.exports=require("/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basemerge/node_modules/lodash.forown/node_modules/lodash._objecttypes/index.js")
+},{"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basemerge/node_modules/lodash.forown/node_modules/lodash._objecttypes/index.js":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/node_modules/lodash._basemerge/node_modules/lodash.forown/node_modules/lodash._objecttypes/index.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/index.js":[function(require,module,exports){
 module.exports = require('./lib/draggable');
 
 },{"./lib/draggable":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/lib/draggable.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/lib/draggable.js":[function(require,module,exports){
@@ -1967,22 +1715,22 @@ var merge = require('lodash.merge');
 var emptyFunction = require('react/lib/emptyFunction');
 
 function createUIEvent(draggable) {
-	return {
-		position: {
-			top: draggable.getTweeningValue('clientY'),
-			left: draggable.getTweeningValue('clientX')
-		}
-	};
+  return {
+    position: {
+      top: draggable.getTweeningValue('clientY'),
+      left: draggable.getTweeningValue('clientX')
+    }
+  };
 }
 
 function canDragY(draggable) {
-	return draggable.props.axis === 'both' ||
-			draggable.props.axis === 'y';
+  return draggable.props.axis === 'both' ||
+    draggable.props.axis === 'y';
 }
 
 function canDragX(draggable) {
-	return draggable.props.axis === 'both' ||
-			draggable.props.axis === 'x';
+  return draggable.props.axis === 'both' ||
+    draggable.props.axis === 'x';
 }
 
 function isFunction(func) {
@@ -2003,7 +1751,7 @@ function matchesSelector(el, selector) {
     'mozMatchesSelector',
     'msMatchesSelector',
     'oMatchesSelector'
-  ], function(method){
+  ], function (method) {
     return isFunction(el[method]);
   });
 
@@ -2012,7 +1760,7 @@ function matchesSelector(el, selector) {
 
 // @credits: http://stackoverflow.com/questions/4817029/whats-the-best-way-to-detect-a-touch-screen-device-using-javascript/4819886#4819886
 var isTouchDevice = 'ontouchstart' in window // works on most browsers
-    || 'onmsgesturechange' in window; // works on ie10 on ms surface
+  || 'onmsgesturechange' in window; // works on ie10 on ms surface
 
 // look ::handleDragStart
 //function isMultiTouch(e) {
@@ -2050,255 +1798,304 @@ function getControlPosition(e) {
 }
 
 function addEvent(el, event, handler) {
-	if (!el) { return; }
-	if (el.attachEvent) {
-		el.attachEvent('on' + event, handler);
-	} else if (el.addEventListener) {
-		el.addEventListener(event, handler, true);
-	} else {
-		el['on' + event] = handler;
-	}
+  if (!el) {
+    return;
+  }
+  if (el.attachEvent) {
+    el.attachEvent('on' + event, handler);
+  } else if (el.addEventListener) {
+    el.addEventListener(event, handler, true);
+  } else {
+    el['on' + event] = handler;
+  }
 }
 
 function removeEvent(el, event, handler) {
-	if (!el) { return; }
-	if (el.detachEvent) {
-		el.detachEvent('on' + event, handler);
-	} else if (el.removeEventListener) {
-		el.removeEventListener(event, handler, true);
-	} else {
-		el['on' + event] = null;
-	}
+  if (!el) {
+    return;
+  }
+  if (el.detachEvent) {
+    el.detachEvent('on' + event, handler);
+  } else if (el.removeEventListener) {
+    el.removeEventListener(event, handler, true);
+  } else {
+    el['on' + event] = null;
+  }
 }
 
 function bound(num, lower, upper) {
-	return Math.max(Math.min(num, upper), lower);
+  return Math.max(Math.min(num, upper), lower);
 }
 
 module.exports = React.createClass({
-	displayName: 'Draggable',
-	mixins: [tweenState.Mixin],
-	propTypes: {
-		/**
-		 * `axis` determines which axis the draggable can move.
-		 *
-		 * 'both' allows movement horizontally and vertically.
-		 * 'x' limits movement to horizontal axis.
-		 * 'y' limits movement to vertical axis.
-		 *
-		 * Defaults to 'both'.
-		 */
-		axis: React.PropTypes.oneOf(['both', 'x', 'y']),
+  displayName: 'Draggable',
+  mixins: [tweenState.Mixin],
+  propTypes: {
+    /**
+     * `axis` determines which axis the draggable can move.
+     *
+     * 'both' allows movement horizontally and vertically.
+     * 'x' limits movement to horizontal axis.
+     * 'y' limits movement to vertical axis.
+     *
+     * Defaults to 'both'.
+     */
+    axis: React.PropTypes.oneOf(['both', 'x', 'y']),
 
-		/**
-		 * `handle` specifies a selector to be used as the handle that initiates drag.
-		 *
-		 * Example:
-		 *
-		 * ```jsx
-		 * 	var App = React.createClass({
-		 * 	    render: function () {
-		 * 	    	return (
-		 * 	    	 	<Draggable handle=".handle">
-		 * 	    	 	  <div>
-		 * 	    	 	      <div className="handle">Click me to drag</div>
-		 * 	    	 	      <div>This is some other content</div>
-		 * 	    	 	  </div>
-		 * 	    		</Draggable>
-		 * 	    	);
-		 * 	    }
-		 * 	});
-		 * ```
-		 */
-		handle: React.PropTypes.string,
+    /**
+     * `handle` specifies a selector to be used as the handle that initiates drag.
+     *
+     * Example:
+     *
+     * ```jsx
+     * 	var App = React.createClass({
+     * 	    render: function () {
+     * 	    	return (
+     * 	    	 	<Draggable handle=".handle">
+     * 	    	 	  <div>
+     * 	    	 	      <div className="handle">Click me to drag</div>
+     * 	    	 	      <div>This is some other content</div>
+     * 	    	 	  </div>
+     * 	    		</Draggable>
+     * 	    	);
+     * 	    }
+     * 	});
+     * ```
+     */
+    handle: React.PropTypes.string,
 
-		/**
-		 * `cancel` specifies a selector to be used to prevent drag initialization.
-		 *
-		 * Example:
-		 *
-		 * ```jsx
-		 * 	var App = React.createClass({
-		 * 	    render: function () {
-		 * 	        return(
-		 * 	            <Draggable cancel=".cancel">
-		 * 	                <div>
-		 * 	                	<div className="cancel">You can't drag from here</div>
-		 *						<div>Dragging here works fine</div>
-		 * 	                </div>
-		 * 	            </Draggable>
-		 * 	        );
-		 * 	    }
-		 * 	});
-		 * ```
-		 */
-		cancel: React.PropTypes.string,
+    /**
+     * `cancel` specifies a selector to be used to prevent drag initialization.
+     *
+     * Example:
+     *
+     * ```jsx
+     * 	var App = React.createClass({
+     * 	    render: function () {
+     * 	        return(
+     * 	            <Draggable cancel=".cancel">
+     * 	                <div>
+     * 	                	<div className="cancel">You can't drag from here</div>
+     *						<div>Dragging here works fine</div>
+     * 	                </div>
+     * 	            </Draggable>
+     * 	        );
+     * 	    }
+     * 	});
+     * ```
+     */
+    cancel: React.PropTypes.string,
 
-		/**
-		 * `grid` specifies the x and y that dragging should snap to.
-		 *
-		 * Example:
-		 *
-		 * ```jsx
-		 * 	var App = React.createClass({
-		 * 	    render: function () {
-		 * 	        return (
-		 * 	            <Draggable grid={[25, 25]}>
-		 * 	                <div>I snap to a 25 x 25 grid</div>
-		 * 	            </Draggable>
-		 * 	        );
-		 * 	    }
-		 * 	});
-		 * ```
-		 */
-		grid: React.PropTypes.arrayOf(React.PropTypes.number),
+    /**
+     * `grid` specifies the x and y that dragging should snap to.
+     *
+     * Example:
+     *
+     * ```jsx
+     * 	var App = React.createClass({
+     * 	    render: function () {
+     * 	        return (
+     * 	            <Draggable grid={[25, 25]}>
+     * 	                <div>I snap to a 25 x 25 grid</div>
+     * 	            </Draggable>
+     * 	        );
+     * 	    }
+     * 	});
+     * ```
+     */
+    grid: React.PropTypes.arrayOf(React.PropTypes.number),
 
-		/**
-		 * `start` specifies the x and y that the dragged item should start at
-		 *
-		 * Example:
-		 *
-		 * ```jsx
-		 * 	var App = React.createClass({
-		 * 	    render: function () {
-		 * 	        return (
-		 * 	            <Draggable start={{x: 25, y: 25}}>
-		 * 	                <div>I start with left: 25px; top: 25px;</div>
-		 * 	            </Draggable>
-		 * 	        );
-		 * 	    }
-		 * 	});
-		 * ```
-		 */
-		start: React.PropTypes.object,
+    /**
+     * `start` specifies the x and y that the dragged item should start at
+     *
+     * Example:
+     *
+     * ```jsx
+     * 	var App = React.createClass({
+     * 	    render: function () {
+     * 	        return (
+     * 	            <Draggable start={{x: 25, y: 25}}>
+     * 	                <div>I start with left: 25px; top: 25px;</div>
+     * 	            </Draggable>
+     * 	        );
+     * 	    }
+     * 	});
+     * ```
+     */
+    start: React.PropTypes.object,
 
-		/**
-		 * `zIndex` specifies the zIndex to use while dragging.
-		 *
-		 * Example:
-		 *
-		 * ```jsx
-		 * 	var App = React.createClass({
-		 * 	    render: function () {
-		 * 	        return (
-		 * 	            <Draggable zIndex={100}>
-		 * 	                <div>I have a zIndex</div>
-		 * 	            </Draggable>
-		 * 	        );
-		 * 	    }
-		 * 	});
-		 * ```
-		 */
-		zIndex: React.PropTypes.number,
+    /**
+     * `zIndex` specifies the zIndex to use while dragging.
+     *
+     * Example:
+     *
+     * ```jsx
+     * 	var App = React.createClass({
+     * 	    render: function () {
+     * 	        return (
+     * 	            <Draggable zIndex={100}>
+     * 	                <div>I have a zIndex</div>
+     * 	            </Draggable>
+     * 	        );
+     * 	    }
+     * 	});
+     * ```
+     */
+    zIndex: React.PropTypes.number,
 
-		/**
-		 * Called when dragging starts.
-		 *
-		 * Example:
-		 *
-		 * ```js
-		 *	function (event, ui) {}
-		 * ```
-		 *
-		 * `event` is the Event that was triggered.
-		 * `ui` is an object:
-		 *
-		 * ```js
-		 *	{
-		 *		position: {top: 0, left: 0}
-		 *	}
-		 * ```
-		 */
-		onStart: React.PropTypes.func,
+    /**
+     * Called when dragging starts.
+     *
+     * Example:
+     *
+     * ```js
+     *	function (event, ui) {}
+     * ```
+     *
+     * `event` is the Event that was triggered.
+     * `ui` is an object:
+     *
+     * ```js
+     *	{
+     *		position: {top: 0, left: 0}
+     *	}
+     * ```
+     */
+    onStart: React.PropTypes.func,
 
-		/**
-		 * Called while dragging.
-		 *
-		 * Example:
-		 *
-		 * ```js
-		 *	function (event, ui) {}
-		 * ```
-		 *
-		 * `event` is the Event that was triggered.
-		 * `ui` is an object:
-		 *
-		 * ```js
-		 *	{
-		 *		position: {top: 0, left: 0}
-		 *	}
-		 * ```
-		 */
-		onDrag: React.PropTypes.func,
+    /**
+     * Called while dragging.
+     *
+     * Example:
+     *
+     * ```js
+     *	function (event, ui) {}
+     * ```
+     *
+     * `event` is the Event that was triggered.
+     * `ui` is an object:
+     *
+     * ```js
+     *	{
+     *		position: {top: 0, left: 0}
+     *	}
+     * ```
+     */
+    onDrag: React.PropTypes.func,
 
-		/**
-		 * Called when dragging stops.
-		 *
-		 * Example:
-		 *
-		 * ```js
-		 *	function (event, ui) {}
-		 * ```
-		 *
-		 * `event` is the Event that was triggered.
-		 * `ui` is an object:
-		 *
-		 * ```js
-		 *	{
-		 *		position: {top: 0, left: 0}
-		 *	}
-		 * ```
-		 */
-		onStop: React.PropTypes.func,
+    /**
+     * Called when dragging stops.
+     *
+     * Example:
+     *
+     * ```js
+     *	function (event, ui) {}
+     * ```
+     *
+     * `event` is the Event that was triggered.
+     * `ui` is an object:
+     *
+     * ```js
+     *	{
+     *		position: {top: 0, left: 0}
+     *	}
+     * ```
+     */
+    onStop: React.PropTypes.func,
 
-		/**
-		 * A workaround option which can be passed if onMouseDown needs to be accessed, since it'll always be blocked (due to that there's internal use of onMouseDown)
-		 *
-		 */
-		onMouseDown: React.PropTypes.func
-	},
+    /**
+     * A workaround option which can be passed if onMouseDown needs to be accessed, since it'll always be blocked (due to that there's internal use of onMouseDown)
+     *
+     */
+    onMouseDown: React.PropTypes.func
+  },
 
-	componentWillUnmount: function() {
-		// Remove any leftover event handlers
-		removeEvent(window, dragEventFor['move'], this.handleDrag);
-		removeEvent(window, dragEventFor['end'], this.handleDragEnd);
-	},
+  componentWillUnmount: function () {
+    // Remove any leftover event handlers
+    removeEvent(window, dragEventFor['move'], this.handleDrag);
+    removeEvent(window, dragEventFor['end'], this.handleDragEnd);
+  },
 
-	getDefaultProps: function () {
-		return {
-			axis: 'both',
-			handle: null,
-			cancel: null,
-			grid: null,
-			start: {
-				x: 0,
-				y: 0
-			},
-			zIndex: NaN,
-			onStart: emptyFunction,
-			onDrag: emptyFunction,
-			onStop: emptyFunction,
-			onMouseDown: emptyFunction
-		};
-	},
+  getDefaultProps: function () {
+    return {
+      axis: 'both',
+      handle: null,
+      cancel: null,
+      grid: null,
+      start: {
+        x: 0,
+        y: 0
+      },
+      zIndex: NaN,
+      onStart: emptyFunction,
+      onDrag: emptyFunction,
+      onStop: emptyFunction,
+      onMouseDown: emptyFunction
+    };
+  },
 
-	getInitialState: function () {
-		return {
-			// Whether or not currently dragging
-			dragging: false,
+  getInitialState: function () {
+    return {
+      // Whether or not currently dragging
+      dragging: false,
 
-			// Start top/left of this.getDOMNode()
-			startX: 0, startY: 0,
+      // Start top/left of this.getDOMNode()
+      startX: 0,
+      startY: 0,
 
-			// Offset between start top/left and mouse top/left
-			offsetX: 0, offsetY: 0,
+      // Offset between start top/left and mouse top/left
+      offsetX: 0,
+      offsetY: 0,
 
-			// Current top/left of this.getDOMNode()
-			clientX: this.props.start.x, clientY: this.props.start.y
-		};
-	},
+      // Current top/left of this.getDOMNode()
+      clientX: this.props.start.x,
+      clientY: this.props.start.y
+    };
+  },
 
-	handleDragStart: function (e) {
+
+  setPosition: function (x, y) {
+    // Calculate top and left
+    var clientX = (this.state.startX + (x - this.state.offsetX));
+    var clientY = (this.state.startY + (y - this.state.offsetY));
+
+    // Snap to grid if prop has been provided
+    if (this.props.grid && Array.isArray(this.props.grid)) {
+      clientX = Math.abs(clientX - this.state.clientX) >= this.props.grid[0] ? clientX : this.state.clientX;
+
+      clientY = Math.abs(clientY - this.state.clientY) >= this.props.grid[1] ? clientY : this.state.clientY;
+    }
+
+    // keep within ranges
+    if (this.props.ranges) {
+      if (this.props.ranges.x) {
+        clientX = bound(clientX, this.props.ranges.x[0], this.props.ranges.x[1]);
+      }
+      if (this.props.ranges.y) {
+        clientY = bound(clientY, this.props.ranges.y[0], this.props.ranges.y[1]);
+      }
+    }
+
+    if (!canDragX(this)) {
+      clientX = this.state.startX;
+    }
+    if (!canDragY(this)) {
+      clientY = this.state.startY;
+    }
+
+    // dont call event handler or diff if nothing changed
+    if (this.state.clientX === clientX && this.state.clientY === clientY) {
+      return;
+    }
+
+    // Update top and left
+    this.setState({
+      clientX: clientX,
+      clientY: clientY
+    });
+  },
+
+  handleDragStart: function (e, artificial) {
     // todo: write right implementation to prevent multitouch drag
     // prevent multi-touch events
     // if (isMultiTouch(e)) {
@@ -2306,159 +2103,452 @@ module.exports = React.createClass({
     //     return
     // }
 
-		// Make it possible to attach event handlers on top of this one
-		this.props.onMouseDown(e);
+    // Make it possible to attach event handlers on top of this one
+    this.props.onMouseDown(e);
 
-		var node = this.getDOMNode();
+    var node = this.getDOMNode();
 
-		// Short circuit if handle or cancel prop was provided and selector doesn't match
-		if ((this.props.handle && !matchesSelector(e.target, this.props.handle)) ||
-			(this.props.cancel && matchesSelector(e.target, this.props.cancel))) {
-			return;
-		}
+    // Short circuit if handle or cancel prop was provided and selector doesn't match
+    if ((this.props.handle && !matchesSelector(e.target, this.props.handle)) ||
+      (this.props.cancel && matchesSelector(e.target, this.props.cancel))) {
+      return;
+    }
 
     var dragPoint = getControlPosition(e);
 
-		// Initiate dragging
-		this.setState({
-			dragging: true,
-			offsetX: dragPoint.clientX,
-			offsetY: dragPoint.clientY,
-			startX: parseInt(node.style.left, 10) || 0,
-			startY: parseInt(node.style.top, 10) || 0
-		});
+    // Initiate dragging
+    this.setState({
+      dragging: true,
+      offsetX: dragPoint.clientX,
+      offsetY: dragPoint.clientY,
+      startX: parseInt(node.style.left, 10) || 0,
+      startY: parseInt(node.style.top, 10) || 0
+    });
 
-		// Call event handler
-		this.props.onStart(e, createUIEvent(this));
+    // Add event handlers
+    if (!artificial) {
+      addEvent(window, dragEventFor['move'], this.handleDrag);
+      addEvent(window, dragEventFor['end'], this.handleDragEnd);
+    }
 
-		// Add event handlers
-		addEvent(window, dragEventFor['move'], this.handleDrag);
-		addEvent(window, dragEventFor['end'], this.handleDragEnd);
-	},
+    // Call event handler
+    this.props.onStart(e, createUIEvent(this));
+  },
 
-	handleDragEnd: function (e) {
-		// Short circuit if not currently dragging
-		if (!this.state.dragging) {
-			return;
-		}
+  handleDragEnd: function (e, artificial) {
+    // Short circuit if not currently dragging
+    if (!this.state.dragging) {
+      return;
+    }
 
-		// Turn off dragging
-		this.setState({
-			dragging: false
-		});
+    // Turn off dragging
+    this.setState({
+      dragging: false
+    });
 
-		// Call event handler
-		this.props.onStop(e, createUIEvent(this));
+    // Remove event handlers
+    if (!artificial) {
+      removeEvent(window, dragEventFor['move'], this.handleDrag);
+      removeEvent(window, dragEventFor['end'], this.handleDragEnd);
+    }
 
-		// Remove event handlers
-    removeEvent(window, dragEventFor['move'], this.handleDrag);
-    removeEvent(window, dragEventFor['end'], this.handleDragEnd);
-	},
+    // Call event handler
+    this.props.onStop(e, createUIEvent(this));
+  },
 
-	handleDrag: function (e) {
+  handleDrag: function (e) {
     var dragPoint = getControlPosition(e);
+    this.setPosition(dragPoint.clientX, dragPoint.clientY);
+    // call event handler
+    this.props.onDrag(e, createUIEvent(this));
+  },
 
-		// Calculate top and left
-    var clientX = (this.state.startX + (dragPoint.clientX - this.state.offsetX));
-    var clientY = (this.state.startY + (dragPoint.clientY - this.state.offsetY));
+  emulateDrag: function (x, y) {
+    var node = this.getDOMNode();
+    var start = {
+      target: node,
+      clientX: 0,
+      clientY: 0
+    };
+    start.touches = [start];
 
-		// Snap to grid if prop has been provided
-		if (this.props.grid && Array.isArray(this.props.grid)) {
-			clientX = Math.abs(clientX - this.state.clientX) >= this.props.grid[0]
-					? clientX
-					: this.state.clientX;
+    var end = {
+      target: node,
+      clientX: x,
+      clientY: y
+    };
+    end.touches = [end];
 
-			clientY = Math.abs(clientY - this.state.clientY) >= this.props.grid[1]
-					? clientY
-					: this.state.clientY;
-		}
+    this.handleDragStart(start, true);
+    // TODO: handleDrag
+    this.handleDragEnd(end, true);
+  },
 
-		// keep within ranges
-		if (this.props.ranges) {
-			if (this.props.ranges.x) {
-				clientX = bound(clientX, this.props.ranges.x[0], this.props.ranges.x[1]);
-			}
-			if (this.props.ranges.y) {
-				clientY = bound(clientY, this.props.ranges.y[0], this.props.ranges.y[1]);
-			}
-		}
+  reset: function (tweenX, tweenY) {
+    if (tweenX) {
+      this.tweenState('clientX', tweenX);
+    } else {
+      this.setState({
+        clientX: 0
+      });
+    }
 
-		if (!canDragX(this)) {
-			clientX = this.state.startX;
-		}
-		if (!canDragY(this)) {
-			clientY = this.state.startY;
-		}
+    if (tweenY) {
+      this.tweenState('clientY', tweenY);
+    } else {
+      this.setState({
+        clientY: 0
+      });
+    }
+    this.handleDragEnd();
+  },
 
-		// dont call event handler or diff if nothing changed
-		if (this.state.clientX === clientX && this.state.clientY === clientY) {
-			return;
-		}
+  render: function () {
+    var style = {
+      // Set top if vertical drag is enabled
+      top: this.getTweeningValue('clientY'),
+      // Set left if horizontal drag is enabled
+      left: this.getTweeningValue('clientX')
+    };
 
-		// Update top and left
-		this.setState({
-			clientX: clientX,
-			clientY: clientY
-		});
+    // Set zIndex if currently dragging and prop has been provided
+    if (!isNaN(this.props.zIndex)) {
+      style.zIndex = this.props.zIndex;
+    }
 
-		// call event handler
-		this.props.onDrag(e, createUIEvent(this));
-	},
+    if (this.props.style) {
+      style = merge(style, this.props.style);
+    }
 
-	reset: function(tweenX, tweenY) {
-		if (tweenX) {
-			this.tweenState('clientX', tweenX);
-	  } else {
-	  	this.setState({clientX: 0});
-	  }
+    // Reuse the child provided
+    // This makes it flexible to use whatever element is wanted (div, ul, etc)
+    return React.addons.cloneWithProps(React.Children.only(this.props.children), {
+      style: style,
+      className: this.props.className,
 
-		if (tweenY) {
-			this.tweenState('clientY', tweenY);
-	  } else {
-	  	this.setState({clientY: 0});
-	  }
-	},
-
-	render: function () {
-		//console.log(this.getTweeningValue('clientX'));
-		var style = {
-			// Set top if vertical drag is enabled
-			top: this.getTweeningValue('clientY'),
-			// Set left if horizontal drag is enabled
-			left: this.getTweeningValue('clientX')
-		};
-
-		// Set zIndex if currently dragging and prop has been provided
-		if (!isNaN(this.props.zIndex)) {
-			style.zIndex = this.props.zIndex;
-		}
-
-		if (this.props.style) {
-			style = merge(style, this.props.style);
-		}
-
-		// Reuse the child provided
-		// This makes it flexible to use whatever element is wanted (div, ul, etc)
-		return React.addons.cloneWithProps(React.Children.only(this.props.children), {
-			style: style,
-			className: this.props.className,
-
-			onMouseDown: this.handleDragStart,
-			onTouchStart: function(ev){
-        ev.preventDefault(); // prevent for scroll
-        return this.handleDragStart.apply(this, arguments);
+      // wrappers
+      onMouseDown: function (e) {
+        return this.handleDragStart(e, false);
       }.bind(this),
-
-			onMouseUp: this.handleDragEnd,
-			onTouchEnd: this.handleDragEnd
-		});
-	}
+      onTouchStart: function (e) {
+        e.preventDefault(); // prevent for scroll
+        return this.handleDragStart(e, false);
+      }.bind(this),
+      onMouseUp: function (e) {
+        return this.handleDragEnd(e, false);
+      }.bind(this),
+      onTouchEnd: function (e) {
+        return this.handleDragEnd(e, false);
+      }.bind(this)
+    });
+  }
 });
+},{"lodash.merge":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/index.js","react-tween-state":"/Users/contra/Projects/react-swipeable/node_modules/react-tween-state/index.js","react/addons":"/Users/contra/Projects/react-swipeable/node_modules/react/addons.js","react/lib/emptyFunction":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/emptyFunction.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-tween-state/easingTypes.js":[function(require,module,exports){
+'use strict';
 
-},{"lodash.merge":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/index.js","react-tween-state":"/Users/contra/Projects/react-swipeable/node_modules/react-tween-state/index.js","react/addons":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/addons.js","react/lib/emptyFunction":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/emptyFunction.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/addons.js":[function(require,module,exports){
+var easingTypes = {
+  // t: current time, b: beginning value, c: change in value, d: duration
+
+  // new note: I much prefer specifying the final value rather than the change
+  // in value this is what the repo's interpolation plugin api will use. Here,
+  // c will stand for final value
+
+  linear: function(t, b, _c, d) {
+    var c = _c - b;
+    return t*c/d + b;
+  },
+  easeInQuad: function (t, b, _c, d) {
+    var c = _c - b;
+    return c*(t/=d)*t + b;
+  },
+  easeOutQuad: function (t, b, _c, d) {
+    var c = _c - b;
+    return -c *(t/=d)*(t-2) + b;
+  },
+  easeInOutQuad: function (t, b, _c, d) {
+    var c = _c - b;
+    if ((t/=d/2) < 1) return c/2*t*t + b;
+    return -c/2 * ((--t)*(t-2) - 1) + b;
+  },
+  easeInElastic: function (t, b, _c, d) {
+    var c = _c - b;
+    var s=1.70158;var p=0;var a=c;
+    if (t==0) return b;  if ((t/=d)==1) return b+c;  if (!p) p=d*.3;
+    if (a < Math.abs(c)) { a=c; var s=p/4; }
+    else var s = p/(2*Math.PI) * Math.asin (c/a);
+    return -(a*Math.pow(2,10*(t-=1)) * Math.sin( (t*d-s)*(2*Math.PI)/p )) + b;
+  },
+  easeOutElastic: function (t, b, _c, d) {
+    var c = _c - b;
+    var s=1.70158;var p=0;var a=c;
+    if (t==0) return b;  if ((t/=d)==1) return b+c;  if (!p) p=d*.3;
+    if (a < Math.abs(c)) { a=c; var s=p/4; }
+    else var s = p/(2*Math.PI) * Math.asin (c/a);
+    return a*Math.pow(2,-10*t) * Math.sin( (t*d-s)*(2*Math.PI)/p ) + c + b;
+  },
+  easeInOutElastic: function (t, b, _c, d) {
+    var c = _c - b;
+    var s=1.70158;var p=0;var a=c;
+    if (t==0) return b;  if ((t/=d/2)==2) return b+c;  if (!p) p=d*(.3*1.5);
+    if (a < Math.abs(c)) { a=c; var s=p/4; }
+    else var s = p/(2*Math.PI) * Math.asin (c/a);
+    if (t < 1) return -.5*(a*Math.pow(2,10*(t-=1)) * Math.sin( (t*d-s)*(2*Math.PI)/p )) + b;
+    return a*Math.pow(2,-10*(t-=1)) * Math.sin( (t*d-s)*(2*Math.PI)/p )*.5 + c + b;
+  },
+  easeInBack: function (t, b, _c, d, s) {
+    var c = _c - b;
+    if (s == undefined) s = 1.70158;
+    return c*(t/=d)*t*((s+1)*t - s) + b;
+  },
+  easeOutBack: function (t, b, _c, d, s) {
+    var c = _c - b;
+    if (s == undefined) s = 1.70158;
+    return c*((t=t/d-1)*t*((s+1)*t + s) + 1) + b;
+  },
+  easeInOutBack: function (t, b, _c, d, s) {
+    var c = _c - b;
+    if (s == undefined) s = 1.70158;
+    if ((t/=d/2) < 1) return c/2*(t*t*(((s*=(1.525))+1)*t - s)) + b;
+    return c/2*((t-=2)*t*(((s*=(1.525))+1)*t + s) + 2) + b;
+  },
+  easeInBounce: function (t, b, _c, d) {
+    var c = _c - b;
+    return c - easingTypes.easeOutBounce (d-t, 0, c, d) + b;
+  },
+  easeOutBounce: function (t, b, _c, d) {
+    var c = _c - b;
+    if ((t/=d) < (1/2.75)) {
+      return c*(7.5625*t*t) + b;
+    } else if (t < (2/2.75)) {
+      return c*(7.5625*(t-=(1.5/2.75))*t + .75) + b;
+    } else if (t < (2.5/2.75)) {
+      return c*(7.5625*(t-=(2.25/2.75))*t + .9375) + b;
+    } else {
+      return c*(7.5625*(t-=(2.625/2.75))*t + .984375) + b;
+    }
+  },
+  easeInOutBounce: function (t, b, _c, d) {
+    var c = _c - b;
+    if (t < d/2) return easingTypes.easeInBounce (t*2, 0, c, d) * .5 + b;
+    return easingTypes.easeOutBounce (t*2-d, 0, c, d) * .5 + c*.5 + b;
+  }
+};
+
+module.exports = easingTypes;
+
+/*
+ *
+ * TERMS OF USE - EASING EQUATIONS
+ *
+ * Open source under the BSD License.
+ *
+ * Copyright © 2001 Robert Penner
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without modification,
+ * are permitted provided that the following conditions are met:
+ *
+ * Redistributions of source code must retain the above copyright notice, this list of
+ * conditions and the following disclaimer.
+ * Redistributions in binary form must reproduce the above copyright notice, this list
+ * of conditions and the following disclaimer in the documentation and/or other materials
+ * provided with the distribution.
+ *
+ * Neither the name of the author nor the names of contributors may be used to endorse
+ * or promote products derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+ *  COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ *  EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+ *  GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
+ * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
+ * OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ */
+
+},{}],"/Users/contra/Projects/react-swipeable/node_modules/react-tween-state/index.js":[function(require,module,exports){
+'use strict';
+
+var easingTypes = require('./easingTypes');
+
+// additive is the new iOS 8 default. In most cases it simulates a physics-
+// looking overshoot behavior (especially with easeInOut. You can test that in
+// the example
+var DEFAULT_STACK_BEHAVIOR = 'ADDITIVE';
+var DEFAULT_EASING = easingTypes.easeInOutQuad;
+var DEFAULT_DURATION = 300;
+var DEFAULT_DELAY = 0;
+
+function shallowClone(obj) {
+  var ret = {};
+  for (var key in obj) {
+    if (!obj.hasOwnProperty(key)) {
+      continue;
+    }
+    ret[key] = obj[key];
+  }
+  return ret;
+}
+
+// see usage below
+function returnState(state) {
+  return state;
+}
+
+var tweenState = {
+  easingTypes: easingTypes,
+  stackBehavior: {
+    ADDITIVE: 'ADDITIVE',
+    DESTRUCTIVE: 'DESTRUCTIVE',
+  }
+};
+
+tweenState.Mixin = {
+  getInitialState: function() {
+    return {
+      tweenQueue: [],
+    };
+  },
+
+  tweenState: function(a, b, c) {
+    // tweenState(stateNameString, config)
+    // tweenState(stateRefFunc, stateNameString, config)
+
+    // passing a state name string and retrieving it later from this.state
+    // doesn't work for values in deeply nested collections (unless you design
+    // the API to be able to parse 'this.state.my.nested[1]', meh). Passing a
+    // direct, resolved reference wouldn't work either, since that reference
+    // points to the old state rather than the subsequent new ones.
+    if (typeof a === 'string') {
+      c = b;
+      b = a;
+      a = returnState;
+    }
+    this._tweenState(a, b, c);
+  },
+
+  _tweenState: function(stateRefFunc, stateName, config) {
+    config = shallowClone(config);
+
+    var state = this._pendingState || this.state;
+    var stateRef = stateRefFunc(state);
+
+    // see the reasoning for these defaults at the top
+    config.stackBehavior = config.stackBehavior || DEFAULT_STACK_BEHAVIOR;
+    config.easing = config.easing || DEFAULT_EASING;
+    config.duration = config.duration == null ? DEFAULT_DURATION : config.duration;
+    config.beginValue = config.beginValue == null ? stateRef[stateName] : config.beginValue;
+    config.delay = config.delay == null ? DEFAULT_DELAY : config.delay;
+
+    var newTweenQueue = state.tweenQueue;
+    if (config.stackBehavior === tweenState.stackBehavior.DESTRUCTIVE) {
+      newTweenQueue = state.tweenQueue.filter(function(item) {
+        return item.stateName !== stateName || item.stateRefFunc(state) !== stateRef;
+      });
+    }
+
+    newTweenQueue.push({
+      stateRefFunc: stateRefFunc,
+      stateName: stateName,
+      config: config,
+      initTime: Date.now() + config.delay,
+    });
+
+    // tweenState calls setState
+    // sorry for mutating. No idea where in the state the value is
+    stateRef[stateName] = config.endValue;
+    // this will also include the above update
+    this.setState({tweenQueue: newTweenQueue});
+
+    if (newTweenQueue.length === 1) {
+      this.startRaf();
+    }
+  },
+
+  getTweeningValue: function(a, b) {
+    // see tweenState API
+    if (typeof a === 'string') {
+      b = a;
+      a = returnState;
+    }
+    return this._getTweeningValue(a, b);
+  },
+
+  _getTweeningValue: function(stateRefFunc, stateName) {
+    var state = this.state;
+    var stateRef = stateRefFunc(state);
+    var tweeningValue = stateRef[stateName];
+    var now = Date.now();
+
+    for (var i = 0; i < state.tweenQueue.length; i++) {
+      var item = state.tweenQueue[i];
+      var itemStateRef = item.stateRefFunc(state);
+      if (item.stateName !== stateName || itemStateRef !== stateRef) {
+        continue;
+      }
+
+      var progressTime = now - item.initTime > item.config.duration ?
+        item.config.duration :
+        Math.max(0, now - item.initTime);
+      // `now - item.initTime` can be negative if initTime is scheduled in the
+      // future by a delay. In this case we take 0
+
+      var contrib = -item.config.endValue + item.config.easing(
+        progressTime,
+        item.config.beginValue,
+        item.config.endValue,
+        item.config.duration
+        // TODO: some funcs accept a 5th param
+      );
+      tweeningValue += contrib;
+    }
+
+    return tweeningValue;
+  },
+
+  _rafCb: function() {
+    if (!this.isMounted()) {
+      return;
+    }
+
+    var state = this.state;
+    if (state.tweenQueue.length === 0) {
+      return;
+    }
+
+    var now = Date.now();
+    state.tweenQueue.forEach(function(item) {
+      if (now - item.initTime >= item.config.duration) {
+        item.config.onEnd && item.config.onEnd();
+      }
+    });
+
+    var newTweenQueue = state.tweenQueue.filter(function(item) {
+      return now - item.initTime < item.config.duration;
+    });
+
+    this.setState({
+      tweenQueue: newTweenQueue,
+    });
+
+    requestAnimationFrame(this._rafCb);
+  },
+
+  startRaf: function() {
+    requestAnimationFrame(this._rafCb);
+  },
+
+};
+
+module.exports = tweenState;
+
+},{"./easingTypes":"/Users/contra/Projects/react-swipeable/node_modules/react-tween-state/easingTypes.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/addons.js":[function(require,module,exports){
 module.exports = require('./lib/ReactWithAddons');
 
-},{"./lib/ReactWithAddons":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactWithAddons.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/AutoFocusMixin.js":[function(require,module,exports){
+},{"./lib/ReactWithAddons":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactWithAddons.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/AutoFocusMixin.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -2485,7 +2575,7 @@ var AutoFocusMixin = {
 
 module.exports = AutoFocusMixin;
 
-},{"./focusNode":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/focusNode.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/BeforeInputEventPlugin.js":[function(require,module,exports){
+},{"./focusNode":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/focusNode.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/BeforeInputEventPlugin.js":[function(require,module,exports){
 /**
  * Copyright 2013 Facebook, Inc.
  * All rights reserved.
@@ -2707,7 +2797,7 @@ var BeforeInputEventPlugin = {
 
 module.exports = BeforeInputEventPlugin;
 
-},{"./EventConstants":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/EventConstants.js","./EventPropagators":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/EventPropagators.js","./ExecutionEnvironment":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ExecutionEnvironment.js","./SyntheticInputEvent":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/SyntheticInputEvent.js","./keyOf":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/keyOf.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/CSSCore.js":[function(require,module,exports){
+},{"./EventConstants":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/EventConstants.js","./EventPropagators":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/EventPropagators.js","./ExecutionEnvironment":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ExecutionEnvironment.js","./SyntheticInputEvent":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/SyntheticInputEvent.js","./keyOf":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/keyOf.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/CSSCore.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2014, Facebook, Inc.
@@ -2819,7 +2909,8 @@ var CSSCore = {
 module.exports = CSSCore;
 
 }).call(this,require('_process'))
-},{"./invariant":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/invariant.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/CSSProperty.js":[function(require,module,exports){
+
+},{"./invariant":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/invariant.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/CSSProperty.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -2838,7 +2929,6 @@ module.exports = CSSCore;
  */
 var isUnitlessNumber = {
   columnCount: true,
-  fillOpacity: true,
   flex: true,
   flexGrow: true,
   flexShrink: true,
@@ -2850,7 +2940,11 @@ var isUnitlessNumber = {
   orphans: true,
   widows: true,
   zIndex: true,
-  zoom: true
+  zoom: true,
+
+  // SVG-related properties
+  fillOpacity: true,
+  strokeOpacity: true
 };
 
 /**
@@ -2935,7 +3029,7 @@ var CSSProperty = {
 
 module.exports = CSSProperty;
 
-},{}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/CSSPropertyOperations.js":[function(require,module,exports){
+},{}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/CSSPropertyOperations.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2014, Facebook, Inc.
@@ -3070,7 +3164,8 @@ var CSSPropertyOperations = {
 module.exports = CSSPropertyOperations;
 
 }).call(this,require('_process'))
-},{"./CSSProperty":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/CSSProperty.js","./ExecutionEnvironment":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ExecutionEnvironment.js","./camelizeStyleName":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/camelizeStyleName.js","./dangerousStyleValue":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/dangerousStyleValue.js","./hyphenateStyleName":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/hyphenateStyleName.js","./memoizeStringOnly":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/memoizeStringOnly.js","./warning":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/warning.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/CallbackQueue.js":[function(require,module,exports){
+
+},{"./CSSProperty":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/CSSProperty.js","./ExecutionEnvironment":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ExecutionEnvironment.js","./camelizeStyleName":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/camelizeStyleName.js","./dangerousStyleValue":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/dangerousStyleValue.js","./hyphenateStyleName":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/hyphenateStyleName.js","./memoizeStringOnly":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/memoizeStringOnly.js","./warning":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/warning.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/CallbackQueue.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2014, Facebook, Inc.
@@ -3170,7 +3265,8 @@ PooledClass.addPoolingTo(CallbackQueue);
 module.exports = CallbackQueue;
 
 }).call(this,require('_process'))
-},{"./Object.assign":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/Object.assign.js","./PooledClass":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/PooledClass.js","./invariant":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/invariant.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ChangeEventPlugin.js":[function(require,module,exports){
+
+},{"./Object.assign":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/Object.assign.js","./PooledClass":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/PooledClass.js","./invariant":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/invariant.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ChangeEventPlugin.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -3552,7 +3648,7 @@ var ChangeEventPlugin = {
 
 module.exports = ChangeEventPlugin;
 
-},{"./EventConstants":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/EventConstants.js","./EventPluginHub":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/EventPluginHub.js","./EventPropagators":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/EventPropagators.js","./ExecutionEnvironment":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ExecutionEnvironment.js","./ReactUpdates":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactUpdates.js","./SyntheticEvent":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/SyntheticEvent.js","./isEventSupported":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/isEventSupported.js","./isTextInputElement":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/isTextInputElement.js","./keyOf":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/keyOf.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ClientReactRootIndex.js":[function(require,module,exports){
+},{"./EventConstants":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/EventConstants.js","./EventPluginHub":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/EventPluginHub.js","./EventPropagators":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/EventPropagators.js","./ExecutionEnvironment":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ExecutionEnvironment.js","./ReactUpdates":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactUpdates.js","./SyntheticEvent":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/SyntheticEvent.js","./isEventSupported":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/isEventSupported.js","./isTextInputElement":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/isTextInputElement.js","./keyOf":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/keyOf.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ClientReactRootIndex.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -3577,7 +3673,7 @@ var ClientReactRootIndex = {
 
 module.exports = ClientReactRootIndex;
 
-},{}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/CompositionEventPlugin.js":[function(require,module,exports){
+},{}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/CompositionEventPlugin.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -3836,7 +3932,7 @@ var CompositionEventPlugin = {
 
 module.exports = CompositionEventPlugin;
 
-},{"./EventConstants":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/EventConstants.js","./EventPropagators":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/EventPropagators.js","./ExecutionEnvironment":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ExecutionEnvironment.js","./ReactInputSelection":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactInputSelection.js","./SyntheticCompositionEvent":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/SyntheticCompositionEvent.js","./getTextContentAccessor":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/getTextContentAccessor.js","./keyOf":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/keyOf.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/DOMChildrenOperations.js":[function(require,module,exports){
+},{"./EventConstants":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/EventConstants.js","./EventPropagators":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/EventPropagators.js","./ExecutionEnvironment":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ExecutionEnvironment.js","./ReactInputSelection":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactInputSelection.js","./SyntheticCompositionEvent":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/SyntheticCompositionEvent.js","./getTextContentAccessor":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/getTextContentAccessor.js","./keyOf":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/keyOf.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/DOMChildrenOperations.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2014, Facebook, Inc.
@@ -4011,7 +4107,8 @@ var DOMChildrenOperations = {
 module.exports = DOMChildrenOperations;
 
 }).call(this,require('_process'))
-},{"./Danger":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/Danger.js","./ReactMultiChildUpdateTypes":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactMultiChildUpdateTypes.js","./getTextContentAccessor":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/getTextContentAccessor.js","./invariant":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/invariant.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/DOMProperty.js":[function(require,module,exports){
+
+},{"./Danger":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/Danger.js","./ReactMultiChildUpdateTypes":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactMultiChildUpdateTypes.js","./getTextContentAccessor":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/getTextContentAccessor.js","./invariant":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/invariant.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/DOMProperty.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2014, Facebook, Inc.
@@ -4310,7 +4407,8 @@ var DOMProperty = {
 module.exports = DOMProperty;
 
 }).call(this,require('_process'))
-},{"./invariant":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/invariant.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/DOMPropertyOperations.js":[function(require,module,exports){
+
+},{"./invariant":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/invariant.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/DOMPropertyOperations.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2014, Facebook, Inc.
@@ -4507,7 +4605,8 @@ var DOMPropertyOperations = {
 module.exports = DOMPropertyOperations;
 
 }).call(this,require('_process'))
-},{"./DOMProperty":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/DOMProperty.js","./escapeTextForBrowser":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/escapeTextForBrowser.js","./memoizeStringOnly":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/memoizeStringOnly.js","./warning":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/warning.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/Danger.js":[function(require,module,exports){
+
+},{"./DOMProperty":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/DOMProperty.js","./escapeTextForBrowser":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/escapeTextForBrowser.js","./memoizeStringOnly":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/memoizeStringOnly.js","./warning":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/warning.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/Danger.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2014, Facebook, Inc.
@@ -4693,7 +4792,8 @@ var Danger = {
 module.exports = Danger;
 
 }).call(this,require('_process'))
-},{"./ExecutionEnvironment":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ExecutionEnvironment.js","./createNodesFromMarkup":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/createNodesFromMarkup.js","./emptyFunction":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/emptyFunction.js","./getMarkupWrap":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/getMarkupWrap.js","./invariant":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/invariant.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/DefaultEventPluginOrder.js":[function(require,module,exports){
+
+},{"./ExecutionEnvironment":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ExecutionEnvironment.js","./createNodesFromMarkup":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/createNodesFromMarkup.js","./emptyFunction":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/emptyFunction.js","./getMarkupWrap":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/getMarkupWrap.js","./invariant":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/invariant.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/DefaultEventPluginOrder.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -4733,7 +4833,7 @@ var DefaultEventPluginOrder = [
 
 module.exports = DefaultEventPluginOrder;
 
-},{"./keyOf":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/keyOf.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/EnterLeaveEventPlugin.js":[function(require,module,exports){
+},{"./keyOf":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/keyOf.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/EnterLeaveEventPlugin.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -4873,7 +4973,7 @@ var EnterLeaveEventPlugin = {
 
 module.exports = EnterLeaveEventPlugin;
 
-},{"./EventConstants":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/EventConstants.js","./EventPropagators":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/EventPropagators.js","./ReactMount":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactMount.js","./SyntheticMouseEvent":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/SyntheticMouseEvent.js","./keyOf":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/keyOf.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/EventConstants.js":[function(require,module,exports){
+},{"./EventConstants":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/EventConstants.js","./EventPropagators":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/EventPropagators.js","./ReactMount":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactMount.js","./SyntheticMouseEvent":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/SyntheticMouseEvent.js","./keyOf":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/keyOf.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/EventConstants.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -4945,7 +5045,7 @@ var EventConstants = {
 
 module.exports = EventConstants;
 
-},{"./keyMirror":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/keyMirror.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/EventListener.js":[function(require,module,exports){
+},{"./keyMirror":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/keyMirror.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/EventListener.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2014 Facebook, Inc.
@@ -5035,7 +5135,8 @@ var EventListener = {
 module.exports = EventListener;
 
 }).call(this,require('_process'))
-},{"./emptyFunction":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/emptyFunction.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/EventPluginHub.js":[function(require,module,exports){
+
+},{"./emptyFunction":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/emptyFunction.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/EventPluginHub.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2014, Facebook, Inc.
@@ -5311,7 +5412,8 @@ var EventPluginHub = {
 module.exports = EventPluginHub;
 
 }).call(this,require('_process'))
-},{"./EventPluginRegistry":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/EventPluginRegistry.js","./EventPluginUtils":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/EventPluginUtils.js","./accumulateInto":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/accumulateInto.js","./forEachAccumulated":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/forEachAccumulated.js","./invariant":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/invariant.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/EventPluginRegistry.js":[function(require,module,exports){
+
+},{"./EventPluginRegistry":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/EventPluginRegistry.js","./EventPluginUtils":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/EventPluginUtils.js","./accumulateInto":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/accumulateInto.js","./forEachAccumulated":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/forEachAccumulated.js","./invariant":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/invariant.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/EventPluginRegistry.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2014, Facebook, Inc.
@@ -5591,7 +5693,8 @@ var EventPluginRegistry = {
 module.exports = EventPluginRegistry;
 
 }).call(this,require('_process'))
-},{"./invariant":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/invariant.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/EventPluginUtils.js":[function(require,module,exports){
+
+},{"./invariant":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/invariant.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/EventPluginUtils.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2014, Facebook, Inc.
@@ -5812,7 +5915,8 @@ var EventPluginUtils = {
 module.exports = EventPluginUtils;
 
 }).call(this,require('_process'))
-},{"./EventConstants":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/EventConstants.js","./invariant":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/invariant.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/EventPropagators.js":[function(require,module,exports){
+
+},{"./EventConstants":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/EventConstants.js","./invariant":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/invariant.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/EventPropagators.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2014, Facebook, Inc.
@@ -5954,7 +6058,8 @@ var EventPropagators = {
 module.exports = EventPropagators;
 
 }).call(this,require('_process'))
-},{"./EventConstants":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/EventConstants.js","./EventPluginHub":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/EventPluginHub.js","./accumulateInto":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/accumulateInto.js","./forEachAccumulated":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/forEachAccumulated.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ExecutionEnvironment.js":[function(require,module,exports){
+
+},{"./EventConstants":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/EventConstants.js","./EventPluginHub":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/EventPluginHub.js","./accumulateInto":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/accumulateInto.js","./forEachAccumulated":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/forEachAccumulated.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ExecutionEnvironment.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -5999,7 +6104,7 @@ var ExecutionEnvironment = {
 
 module.exports = ExecutionEnvironment;
 
-},{}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/HTMLDOMPropertyConfig.js":[function(require,module,exports){
+},{}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/HTMLDOMPropertyConfig.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -6090,7 +6195,11 @@ var HTMLDOMPropertyConfig = {
     draggable: null,
     encType: null,
     form: MUST_USE_ATTRIBUTE,
+    formAction: MUST_USE_ATTRIBUTE,
+    formEncType: MUST_USE_ATTRIBUTE,
+    formMethod: MUST_USE_ATTRIBUTE,
     formNoValidate: HAS_BOOLEAN_VALUE,
+    formTarget: MUST_USE_ATTRIBUTE,
     frameBorder: MUST_USE_ATTRIBUTE,
     height: MUST_USE_ATTRIBUTE,
     hidden: MUST_USE_ATTRIBUTE | HAS_BOOLEAN_VALUE,
@@ -6105,6 +6214,8 @@ var HTMLDOMPropertyConfig = {
     list: MUST_USE_ATTRIBUTE,
     loop: MUST_USE_PROPERTY | HAS_BOOLEAN_VALUE,
     manifest: MUST_USE_ATTRIBUTE,
+    marginHeight: null,
+    marginWidth: null,
     max: null,
     maxLength: MUST_USE_ATTRIBUTE,
     media: MUST_USE_ATTRIBUTE,
@@ -6185,7 +6296,7 @@ var HTMLDOMPropertyConfig = {
 
 module.exports = HTMLDOMPropertyConfig;
 
-},{"./DOMProperty":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/DOMProperty.js","./ExecutionEnvironment":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ExecutionEnvironment.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/LinkedStateMixin.js":[function(require,module,exports){
+},{"./DOMProperty":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/DOMProperty.js","./ExecutionEnvironment":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ExecutionEnvironment.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/LinkedStateMixin.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -6226,7 +6337,7 @@ var LinkedStateMixin = {
 
 module.exports = LinkedStateMixin;
 
-},{"./ReactLink":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactLink.js","./ReactStateSetters":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactStateSetters.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/LinkedValueUtils.js":[function(require,module,exports){
+},{"./ReactLink":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactLink.js","./ReactStateSetters":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactStateSetters.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/LinkedValueUtils.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2014, Facebook, Inc.
@@ -6382,7 +6493,8 @@ var LinkedValueUtils = {
 module.exports = LinkedValueUtils;
 
 }).call(this,require('_process'))
-},{"./ReactPropTypes":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactPropTypes.js","./invariant":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/invariant.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/LocalEventTrapMixin.js":[function(require,module,exports){
+
+},{"./ReactPropTypes":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactPropTypes.js","./invariant":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/invariant.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/LocalEventTrapMixin.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2014, Facebook, Inc.
@@ -6432,7 +6544,8 @@ var LocalEventTrapMixin = {
 module.exports = LocalEventTrapMixin;
 
 }).call(this,require('_process'))
-},{"./ReactBrowserEventEmitter":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactBrowserEventEmitter.js","./accumulateInto":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/accumulateInto.js","./forEachAccumulated":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/forEachAccumulated.js","./invariant":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/invariant.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/MobileSafariClickEventPlugin.js":[function(require,module,exports){
+
+},{"./ReactBrowserEventEmitter":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactBrowserEventEmitter.js","./accumulateInto":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/accumulateInto.js","./forEachAccumulated":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/forEachAccumulated.js","./invariant":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/invariant.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/MobileSafariClickEventPlugin.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -6490,7 +6603,7 @@ var MobileSafariClickEventPlugin = {
 
 module.exports = MobileSafariClickEventPlugin;
 
-},{"./EventConstants":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/EventConstants.js","./emptyFunction":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/emptyFunction.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/Object.assign.js":[function(require,module,exports){
+},{"./EventConstants":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/EventConstants.js","./emptyFunction":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/emptyFunction.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/Object.assign.js":[function(require,module,exports){
 /**
  * Copyright 2014, Facebook, Inc.
  * All rights reserved.
@@ -6537,7 +6650,7 @@ function assign(target, sources) {
 
 module.exports = assign;
 
-},{}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/PooledClass.js":[function(require,module,exports){
+},{}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/PooledClass.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2014, Facebook, Inc.
@@ -6653,7 +6766,8 @@ var PooledClass = {
 module.exports = PooledClass;
 
 }).call(this,require('_process'))
-},{"./invariant":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/invariant.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/React.js":[function(require,module,exports){
+
+},{"./invariant":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/invariant.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/React.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2014, Facebook, Inc.
@@ -6836,12 +6950,13 @@ if ("production" !== process.env.NODE_ENV) {
 
 // Version exists only in the open-source version of React, not in Facebook's
 // internal version.
-React.version = '0.12.1';
+React.version = '0.12.2';
 
 module.exports = React;
 
 }).call(this,require('_process'))
-},{"./DOMPropertyOperations":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/DOMPropertyOperations.js","./EventPluginUtils":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/EventPluginUtils.js","./ExecutionEnvironment":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ExecutionEnvironment.js","./Object.assign":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/Object.assign.js","./ReactChildren":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactChildren.js","./ReactComponent":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactComponent.js","./ReactCompositeComponent":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactCompositeComponent.js","./ReactContext":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactContext.js","./ReactCurrentOwner":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactCurrentOwner.js","./ReactDOM":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactDOM.js","./ReactDOMComponent":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactDOMComponent.js","./ReactDefaultInjection":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactDefaultInjection.js","./ReactElement":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactElement.js","./ReactElementValidator":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactElementValidator.js","./ReactInstanceHandles":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactInstanceHandles.js","./ReactLegacyElement":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactLegacyElement.js","./ReactMount":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactMount.js","./ReactMultiChild":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactMultiChild.js","./ReactPerf":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactPerf.js","./ReactPropTypes":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactPropTypes.js","./ReactServerRendering":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactServerRendering.js","./ReactTextComponent":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactTextComponent.js","./deprecated":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/deprecated.js","./onlyChild":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/onlyChild.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactBrowserComponentMixin.js":[function(require,module,exports){
+
+},{"./DOMPropertyOperations":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/DOMPropertyOperations.js","./EventPluginUtils":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/EventPluginUtils.js","./ExecutionEnvironment":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ExecutionEnvironment.js","./Object.assign":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/Object.assign.js","./ReactChildren":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactChildren.js","./ReactComponent":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactComponent.js","./ReactCompositeComponent":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactCompositeComponent.js","./ReactContext":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactContext.js","./ReactCurrentOwner":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactCurrentOwner.js","./ReactDOM":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactDOM.js","./ReactDOMComponent":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactDOMComponent.js","./ReactDefaultInjection":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactDefaultInjection.js","./ReactElement":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactElement.js","./ReactElementValidator":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactElementValidator.js","./ReactInstanceHandles":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactInstanceHandles.js","./ReactLegacyElement":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactLegacyElement.js","./ReactMount":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactMount.js","./ReactMultiChild":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactMultiChild.js","./ReactPerf":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactPerf.js","./ReactPropTypes":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactPropTypes.js","./ReactServerRendering":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactServerRendering.js","./ReactTextComponent":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactTextComponent.js","./deprecated":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/deprecated.js","./onlyChild":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/onlyChild.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactBrowserComponentMixin.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2014, Facebook, Inc.
@@ -6884,7 +6999,8 @@ var ReactBrowserComponentMixin = {
 module.exports = ReactBrowserComponentMixin;
 
 }).call(this,require('_process'))
-},{"./ReactEmptyComponent":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactEmptyComponent.js","./ReactMount":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactMount.js","./invariant":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/invariant.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactBrowserEventEmitter.js":[function(require,module,exports){
+
+},{"./ReactEmptyComponent":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactEmptyComponent.js","./ReactMount":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactMount.js","./invariant":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/invariant.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactBrowserEventEmitter.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -7239,7 +7355,7 @@ var ReactBrowserEventEmitter = assign({}, ReactEventEmitterMixin, {
 
 module.exports = ReactBrowserEventEmitter;
 
-},{"./EventConstants":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/EventConstants.js","./EventPluginHub":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/EventPluginHub.js","./EventPluginRegistry":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/EventPluginRegistry.js","./Object.assign":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/Object.assign.js","./ReactEventEmitterMixin":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactEventEmitterMixin.js","./ViewportMetrics":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ViewportMetrics.js","./isEventSupported":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/isEventSupported.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactCSSTransitionGroup.js":[function(require,module,exports){
+},{"./EventConstants":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/EventConstants.js","./EventPluginHub":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/EventPluginHub.js","./EventPluginRegistry":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/EventPluginRegistry.js","./Object.assign":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/Object.assign.js","./ReactEventEmitterMixin":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactEventEmitterMixin.js","./ViewportMetrics":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ViewportMetrics.js","./isEventSupported":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/isEventSupported.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactCSSTransitionGroup.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -7306,7 +7422,7 @@ var ReactCSSTransitionGroup = React.createClass({
 
 module.exports = ReactCSSTransitionGroup;
 
-},{"./Object.assign":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/Object.assign.js","./React":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/React.js","./ReactCSSTransitionGroupChild":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactCSSTransitionGroupChild.js","./ReactTransitionGroup":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactTransitionGroup.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactCSSTransitionGroupChild.js":[function(require,module,exports){
+},{"./Object.assign":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/Object.assign.js","./React":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/React.js","./ReactCSSTransitionGroupChild":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactCSSTransitionGroupChild.js","./ReactTransitionGroup":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactTransitionGroup.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactCSSTransitionGroupChild.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2014, Facebook, Inc.
@@ -7441,7 +7557,8 @@ var ReactCSSTransitionGroupChild = React.createClass({
 module.exports = ReactCSSTransitionGroupChild;
 
 }).call(this,require('_process'))
-},{"./CSSCore":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/CSSCore.js","./React":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/React.js","./ReactTransitionEvents":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactTransitionEvents.js","./onlyChild":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/onlyChild.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactChildren.js":[function(require,module,exports){
+
+},{"./CSSCore":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/CSSCore.js","./React":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/React.js","./ReactTransitionEvents":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactTransitionEvents.js","./onlyChild":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/onlyChild.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactChildren.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2014, Facebook, Inc.
@@ -7591,7 +7708,8 @@ var ReactChildren = {
 module.exports = ReactChildren;
 
 }).call(this,require('_process'))
-},{"./PooledClass":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/PooledClass.js","./traverseAllChildren":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/traverseAllChildren.js","./warning":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/warning.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactComponent.js":[function(require,module,exports){
+
+},{"./PooledClass":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/PooledClass.js","./traverseAllChildren":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/traverseAllChildren.js","./warning":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/warning.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactComponent.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2014, Facebook, Inc.
@@ -8034,7 +8152,8 @@ var ReactComponent = {
 module.exports = ReactComponent;
 
 }).call(this,require('_process'))
-},{"./Object.assign":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/Object.assign.js","./ReactElement":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactElement.js","./ReactOwner":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactOwner.js","./ReactUpdates":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactUpdates.js","./invariant":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/invariant.js","./keyMirror":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/keyMirror.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactComponentBrowserEnvironment.js":[function(require,module,exports){
+
+},{"./Object.assign":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/Object.assign.js","./ReactElement":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactElement.js","./ReactOwner":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactOwner.js","./ReactUpdates":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactUpdates.js","./invariant":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/invariant.js","./keyMirror":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/keyMirror.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactComponentBrowserEnvironment.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2014, Facebook, Inc.
@@ -8156,7 +8275,8 @@ var ReactComponentBrowserEnvironment = {
 module.exports = ReactComponentBrowserEnvironment;
 
 }).call(this,require('_process'))
-},{"./ReactDOMIDOperations":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactDOMIDOperations.js","./ReactMarkupChecksum":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactMarkupChecksum.js","./ReactMount":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactMount.js","./ReactPerf":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactPerf.js","./ReactReconcileTransaction":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactReconcileTransaction.js","./getReactRootElementInContainer":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/getReactRootElementInContainer.js","./invariant":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/invariant.js","./setInnerHTML":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/setInnerHTML.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactComponentWithPureRenderMixin.js":[function(require,module,exports){
+
+},{"./ReactDOMIDOperations":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactDOMIDOperations.js","./ReactMarkupChecksum":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactMarkupChecksum.js","./ReactMount":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactMount.js","./ReactPerf":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactPerf.js","./ReactReconcileTransaction":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactReconcileTransaction.js","./getReactRootElementInContainer":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/getReactRootElementInContainer.js","./invariant":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/invariant.js","./setInnerHTML":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/setInnerHTML.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactComponentWithPureRenderMixin.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -8205,7 +8325,7 @@ var ReactComponentWithPureRenderMixin = {
 
 module.exports = ReactComponentWithPureRenderMixin;
 
-},{"./shallowEqual":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/shallowEqual.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactCompositeComponent.js":[function(require,module,exports){
+},{"./shallowEqual":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/shallowEqual.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactCompositeComponent.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2014, Facebook, Inc.
@@ -9645,7 +9765,8 @@ var ReactCompositeComponent = {
 module.exports = ReactCompositeComponent;
 
 }).call(this,require('_process'))
-},{"./Object.assign":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/Object.assign.js","./ReactComponent":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactComponent.js","./ReactContext":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactContext.js","./ReactCurrentOwner":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactCurrentOwner.js","./ReactElement":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactElement.js","./ReactElementValidator":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactElementValidator.js","./ReactEmptyComponent":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactEmptyComponent.js","./ReactErrorUtils":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactErrorUtils.js","./ReactLegacyElement":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactLegacyElement.js","./ReactOwner":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactOwner.js","./ReactPerf":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactPerf.js","./ReactPropTransferer":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactPropTransferer.js","./ReactPropTypeLocationNames":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactPropTypeLocationNames.js","./ReactPropTypeLocations":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactPropTypeLocations.js","./ReactUpdates":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactUpdates.js","./instantiateReactComponent":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/instantiateReactComponent.js","./invariant":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/invariant.js","./keyMirror":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/keyMirror.js","./keyOf":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/keyOf.js","./mapObject":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/mapObject.js","./monitorCodeUse":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/monitorCodeUse.js","./shouldUpdateReactComponent":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/shouldUpdateReactComponent.js","./warning":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/warning.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactContext.js":[function(require,module,exports){
+
+},{"./Object.assign":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/Object.assign.js","./ReactComponent":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactComponent.js","./ReactContext":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactContext.js","./ReactCurrentOwner":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactCurrentOwner.js","./ReactElement":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactElement.js","./ReactElementValidator":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactElementValidator.js","./ReactEmptyComponent":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactEmptyComponent.js","./ReactErrorUtils":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactErrorUtils.js","./ReactLegacyElement":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactLegacyElement.js","./ReactOwner":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactOwner.js","./ReactPerf":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactPerf.js","./ReactPropTransferer":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactPropTransferer.js","./ReactPropTypeLocationNames":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactPropTypeLocationNames.js","./ReactPropTypeLocations":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactPropTypeLocations.js","./ReactUpdates":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactUpdates.js","./instantiateReactComponent":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/instantiateReactComponent.js","./invariant":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/invariant.js","./keyMirror":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/keyMirror.js","./keyOf":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/keyOf.js","./mapObject":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/mapObject.js","./monitorCodeUse":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/monitorCodeUse.js","./shouldUpdateReactComponent":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/shouldUpdateReactComponent.js","./warning":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/warning.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactContext.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -9707,7 +9828,7 @@ var ReactContext = {
 
 module.exports = ReactContext;
 
-},{"./Object.assign":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/Object.assign.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactCurrentOwner.js":[function(require,module,exports){
+},{"./Object.assign":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/Object.assign.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactCurrentOwner.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -9741,7 +9862,7 @@ var ReactCurrentOwner = {
 
 module.exports = ReactCurrentOwner;
 
-},{}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactDOM.js":[function(require,module,exports){
+},{}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactDOM.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2014, Facebook, Inc.
@@ -9924,7 +10045,8 @@ var ReactDOM = mapObject({
 module.exports = ReactDOM;
 
 }).call(this,require('_process'))
-},{"./ReactElement":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactElement.js","./ReactElementValidator":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactElementValidator.js","./ReactLegacyElement":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactLegacyElement.js","./mapObject":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/mapObject.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactDOMButton.js":[function(require,module,exports){
+
+},{"./ReactElement":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactElement.js","./ReactElementValidator":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactElementValidator.js","./ReactLegacyElement":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactLegacyElement.js","./mapObject":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/mapObject.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactDOMButton.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -9989,7 +10111,7 @@ var ReactDOMButton = ReactCompositeComponent.createClass({
 
 module.exports = ReactDOMButton;
 
-},{"./AutoFocusMixin":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/AutoFocusMixin.js","./ReactBrowserComponentMixin":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactBrowserComponentMixin.js","./ReactCompositeComponent":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactCompositeComponent.js","./ReactDOM":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactDOM.js","./ReactElement":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactElement.js","./keyMirror":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/keyMirror.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactDOMComponent.js":[function(require,module,exports){
+},{"./AutoFocusMixin":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/AutoFocusMixin.js","./ReactBrowserComponentMixin":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactBrowserComponentMixin.js","./ReactCompositeComponent":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactCompositeComponent.js","./ReactDOM":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactDOM.js","./ReactElement":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactElement.js","./keyMirror":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/keyMirror.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactDOMComponent.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2014, Facebook, Inc.
@@ -10476,7 +10598,8 @@ assign(
 module.exports = ReactDOMComponent;
 
 }).call(this,require('_process'))
-},{"./CSSPropertyOperations":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/CSSPropertyOperations.js","./DOMProperty":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/DOMProperty.js","./DOMPropertyOperations":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/DOMPropertyOperations.js","./Object.assign":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/Object.assign.js","./ReactBrowserComponentMixin":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactBrowserComponentMixin.js","./ReactBrowserEventEmitter":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactBrowserEventEmitter.js","./ReactComponent":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactComponent.js","./ReactMount":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactMount.js","./ReactMultiChild":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactMultiChild.js","./ReactPerf":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactPerf.js","./escapeTextForBrowser":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/escapeTextForBrowser.js","./invariant":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/invariant.js","./isEventSupported":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/isEventSupported.js","./keyOf":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/keyOf.js","./monitorCodeUse":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/monitorCodeUse.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactDOMForm.js":[function(require,module,exports){
+
+},{"./CSSPropertyOperations":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/CSSPropertyOperations.js","./DOMProperty":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/DOMProperty.js","./DOMPropertyOperations":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/DOMPropertyOperations.js","./Object.assign":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/Object.assign.js","./ReactBrowserComponentMixin":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactBrowserComponentMixin.js","./ReactBrowserEventEmitter":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactBrowserEventEmitter.js","./ReactComponent":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactComponent.js","./ReactMount":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactMount.js","./ReactMultiChild":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactMultiChild.js","./ReactPerf":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactPerf.js","./escapeTextForBrowser":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/escapeTextForBrowser.js","./invariant":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/invariant.js","./isEventSupported":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/isEventSupported.js","./keyOf":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/keyOf.js","./monitorCodeUse":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/monitorCodeUse.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactDOMForm.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -10526,7 +10649,7 @@ var ReactDOMForm = ReactCompositeComponent.createClass({
 
 module.exports = ReactDOMForm;
 
-},{"./EventConstants":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/EventConstants.js","./LocalEventTrapMixin":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/LocalEventTrapMixin.js","./ReactBrowserComponentMixin":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactBrowserComponentMixin.js","./ReactCompositeComponent":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactCompositeComponent.js","./ReactDOM":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactDOM.js","./ReactElement":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactElement.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactDOMIDOperations.js":[function(require,module,exports){
+},{"./EventConstants":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/EventConstants.js","./LocalEventTrapMixin":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/LocalEventTrapMixin.js","./ReactBrowserComponentMixin":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactBrowserComponentMixin.js","./ReactCompositeComponent":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactCompositeComponent.js","./ReactDOM":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactDOM.js","./ReactElement":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactElement.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactDOMIDOperations.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2014, Facebook, Inc.
@@ -10712,7 +10835,8 @@ var ReactDOMIDOperations = {
 module.exports = ReactDOMIDOperations;
 
 }).call(this,require('_process'))
-},{"./CSSPropertyOperations":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/CSSPropertyOperations.js","./DOMChildrenOperations":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/DOMChildrenOperations.js","./DOMPropertyOperations":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/DOMPropertyOperations.js","./ReactMount":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactMount.js","./ReactPerf":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactPerf.js","./invariant":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/invariant.js","./setInnerHTML":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/setInnerHTML.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactDOMImg.js":[function(require,module,exports){
+
+},{"./CSSPropertyOperations":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/CSSPropertyOperations.js","./DOMChildrenOperations":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/DOMChildrenOperations.js","./DOMPropertyOperations":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/DOMPropertyOperations.js","./ReactMount":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactMount.js","./ReactPerf":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactPerf.js","./invariant":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/invariant.js","./setInnerHTML":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/setInnerHTML.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactDOMImg.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -10760,7 +10884,7 @@ var ReactDOMImg = ReactCompositeComponent.createClass({
 
 module.exports = ReactDOMImg;
 
-},{"./EventConstants":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/EventConstants.js","./LocalEventTrapMixin":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/LocalEventTrapMixin.js","./ReactBrowserComponentMixin":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactBrowserComponentMixin.js","./ReactCompositeComponent":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactCompositeComponent.js","./ReactDOM":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactDOM.js","./ReactElement":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactElement.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactDOMInput.js":[function(require,module,exports){
+},{"./EventConstants":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/EventConstants.js","./LocalEventTrapMixin":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/LocalEventTrapMixin.js","./ReactBrowserComponentMixin":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactBrowserComponentMixin.js","./ReactCompositeComponent":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactCompositeComponent.js","./ReactDOM":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactDOM.js","./ReactElement":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactElement.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactDOMInput.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2014, Facebook, Inc.
@@ -10938,7 +11062,8 @@ var ReactDOMInput = ReactCompositeComponent.createClass({
 module.exports = ReactDOMInput;
 
 }).call(this,require('_process'))
-},{"./AutoFocusMixin":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/AutoFocusMixin.js","./DOMPropertyOperations":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/DOMPropertyOperations.js","./LinkedValueUtils":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/LinkedValueUtils.js","./Object.assign":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/Object.assign.js","./ReactBrowserComponentMixin":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactBrowserComponentMixin.js","./ReactCompositeComponent":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactCompositeComponent.js","./ReactDOM":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactDOM.js","./ReactElement":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactElement.js","./ReactMount":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactMount.js","./ReactUpdates":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactUpdates.js","./invariant":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/invariant.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactDOMOption.js":[function(require,module,exports){
+
+},{"./AutoFocusMixin":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/AutoFocusMixin.js","./DOMPropertyOperations":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/DOMPropertyOperations.js","./LinkedValueUtils":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/LinkedValueUtils.js","./Object.assign":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/Object.assign.js","./ReactBrowserComponentMixin":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactBrowserComponentMixin.js","./ReactCompositeComponent":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactCompositeComponent.js","./ReactDOM":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactDOM.js","./ReactElement":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactElement.js","./ReactMount":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactMount.js","./ReactUpdates":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactUpdates.js","./invariant":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/invariant.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactDOMOption.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2014, Facebook, Inc.
@@ -10991,7 +11116,8 @@ var ReactDOMOption = ReactCompositeComponent.createClass({
 module.exports = ReactDOMOption;
 
 }).call(this,require('_process'))
-},{"./ReactBrowserComponentMixin":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactBrowserComponentMixin.js","./ReactCompositeComponent":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactCompositeComponent.js","./ReactDOM":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactDOM.js","./ReactElement":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactElement.js","./warning":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/warning.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactDOMSelect.js":[function(require,module,exports){
+
+},{"./ReactBrowserComponentMixin":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactBrowserComponentMixin.js","./ReactCompositeComponent":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactCompositeComponent.js","./ReactDOM":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactDOM.js","./ReactElement":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactElement.js","./warning":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/warning.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactDOMSelect.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -11175,7 +11301,7 @@ var ReactDOMSelect = ReactCompositeComponent.createClass({
 
 module.exports = ReactDOMSelect;
 
-},{"./AutoFocusMixin":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/AutoFocusMixin.js","./LinkedValueUtils":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/LinkedValueUtils.js","./Object.assign":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/Object.assign.js","./ReactBrowserComponentMixin":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactBrowserComponentMixin.js","./ReactCompositeComponent":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactCompositeComponent.js","./ReactDOM":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactDOM.js","./ReactElement":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactElement.js","./ReactUpdates":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactUpdates.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactDOMSelection.js":[function(require,module,exports){
+},{"./AutoFocusMixin":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/AutoFocusMixin.js","./LinkedValueUtils":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/LinkedValueUtils.js","./Object.assign":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/Object.assign.js","./ReactBrowserComponentMixin":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactBrowserComponentMixin.js","./ReactCompositeComponent":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactCompositeComponent.js","./ReactDOM":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactDOM.js","./ReactElement":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactElement.js","./ReactUpdates":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactUpdates.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactDOMSelection.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -11384,7 +11510,7 @@ var ReactDOMSelection = {
 
 module.exports = ReactDOMSelection;
 
-},{"./ExecutionEnvironment":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ExecutionEnvironment.js","./getNodeForCharacterOffset":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/getNodeForCharacterOffset.js","./getTextContentAccessor":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/getTextContentAccessor.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactDOMTextarea.js":[function(require,module,exports){
+},{"./ExecutionEnvironment":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ExecutionEnvironment.js","./getNodeForCharacterOffset":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/getNodeForCharacterOffset.js","./getTextContentAccessor":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/getTextContentAccessor.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactDOMTextarea.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2014, Facebook, Inc.
@@ -11525,7 +11651,8 @@ var ReactDOMTextarea = ReactCompositeComponent.createClass({
 module.exports = ReactDOMTextarea;
 
 }).call(this,require('_process'))
-},{"./AutoFocusMixin":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/AutoFocusMixin.js","./DOMPropertyOperations":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/DOMPropertyOperations.js","./LinkedValueUtils":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/LinkedValueUtils.js","./Object.assign":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/Object.assign.js","./ReactBrowserComponentMixin":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactBrowserComponentMixin.js","./ReactCompositeComponent":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactCompositeComponent.js","./ReactDOM":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactDOM.js","./ReactElement":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactElement.js","./ReactUpdates":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactUpdates.js","./invariant":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/invariant.js","./warning":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/warning.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactDefaultBatchingStrategy.js":[function(require,module,exports){
+
+},{"./AutoFocusMixin":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/AutoFocusMixin.js","./DOMPropertyOperations":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/DOMPropertyOperations.js","./LinkedValueUtils":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/LinkedValueUtils.js","./Object.assign":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/Object.assign.js","./ReactBrowserComponentMixin":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactBrowserComponentMixin.js","./ReactCompositeComponent":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactCompositeComponent.js","./ReactDOM":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactDOM.js","./ReactElement":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactElement.js","./ReactUpdates":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactUpdates.js","./invariant":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/invariant.js","./warning":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/warning.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactDefaultBatchingStrategy.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -11598,7 +11725,7 @@ var ReactDefaultBatchingStrategy = {
 
 module.exports = ReactDefaultBatchingStrategy;
 
-},{"./Object.assign":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/Object.assign.js","./ReactUpdates":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactUpdates.js","./Transaction":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/Transaction.js","./emptyFunction":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/emptyFunction.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactDefaultInjection.js":[function(require,module,exports){
+},{"./Object.assign":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/Object.assign.js","./ReactUpdates":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactUpdates.js","./Transaction":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/Transaction.js","./emptyFunction":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/emptyFunction.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactDefaultInjection.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2014, Facebook, Inc.
@@ -11727,7 +11854,8 @@ module.exports = {
 };
 
 }).call(this,require('_process'))
-},{"./BeforeInputEventPlugin":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/BeforeInputEventPlugin.js","./ChangeEventPlugin":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ChangeEventPlugin.js","./ClientReactRootIndex":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ClientReactRootIndex.js","./CompositionEventPlugin":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/CompositionEventPlugin.js","./DefaultEventPluginOrder":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/DefaultEventPluginOrder.js","./EnterLeaveEventPlugin":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/EnterLeaveEventPlugin.js","./ExecutionEnvironment":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ExecutionEnvironment.js","./HTMLDOMPropertyConfig":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/HTMLDOMPropertyConfig.js","./MobileSafariClickEventPlugin":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/MobileSafariClickEventPlugin.js","./ReactBrowserComponentMixin":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactBrowserComponentMixin.js","./ReactComponentBrowserEnvironment":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactComponentBrowserEnvironment.js","./ReactDOMButton":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactDOMButton.js","./ReactDOMComponent":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactDOMComponent.js","./ReactDOMForm":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactDOMForm.js","./ReactDOMImg":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactDOMImg.js","./ReactDOMInput":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactDOMInput.js","./ReactDOMOption":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactDOMOption.js","./ReactDOMSelect":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactDOMSelect.js","./ReactDOMTextarea":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactDOMTextarea.js","./ReactDefaultBatchingStrategy":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactDefaultBatchingStrategy.js","./ReactDefaultPerf":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactDefaultPerf.js","./ReactEventListener":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactEventListener.js","./ReactInjection":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactInjection.js","./ReactInstanceHandles":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactInstanceHandles.js","./ReactMount":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactMount.js","./SVGDOMPropertyConfig":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/SVGDOMPropertyConfig.js","./SelectEventPlugin":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/SelectEventPlugin.js","./ServerReactRootIndex":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ServerReactRootIndex.js","./SimpleEventPlugin":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/SimpleEventPlugin.js","./createFullPageComponent":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/createFullPageComponent.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactDefaultPerf.js":[function(require,module,exports){
+
+},{"./BeforeInputEventPlugin":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/BeforeInputEventPlugin.js","./ChangeEventPlugin":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ChangeEventPlugin.js","./ClientReactRootIndex":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ClientReactRootIndex.js","./CompositionEventPlugin":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/CompositionEventPlugin.js","./DefaultEventPluginOrder":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/DefaultEventPluginOrder.js","./EnterLeaveEventPlugin":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/EnterLeaveEventPlugin.js","./ExecutionEnvironment":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ExecutionEnvironment.js","./HTMLDOMPropertyConfig":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/HTMLDOMPropertyConfig.js","./MobileSafariClickEventPlugin":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/MobileSafariClickEventPlugin.js","./ReactBrowserComponentMixin":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactBrowserComponentMixin.js","./ReactComponentBrowserEnvironment":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactComponentBrowserEnvironment.js","./ReactDOMButton":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactDOMButton.js","./ReactDOMComponent":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactDOMComponent.js","./ReactDOMForm":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactDOMForm.js","./ReactDOMImg":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactDOMImg.js","./ReactDOMInput":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactDOMInput.js","./ReactDOMOption":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactDOMOption.js","./ReactDOMSelect":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactDOMSelect.js","./ReactDOMTextarea":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactDOMTextarea.js","./ReactDefaultBatchingStrategy":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactDefaultBatchingStrategy.js","./ReactDefaultPerf":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactDefaultPerf.js","./ReactEventListener":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactEventListener.js","./ReactInjection":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactInjection.js","./ReactInstanceHandles":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactInstanceHandles.js","./ReactMount":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactMount.js","./SVGDOMPropertyConfig":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/SVGDOMPropertyConfig.js","./SelectEventPlugin":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/SelectEventPlugin.js","./ServerReactRootIndex":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ServerReactRootIndex.js","./SimpleEventPlugin":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/SimpleEventPlugin.js","./createFullPageComponent":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/createFullPageComponent.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactDefaultPerf.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -11987,7 +12115,7 @@ var ReactDefaultPerf = {
 
 module.exports = ReactDefaultPerf;
 
-},{"./DOMProperty":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/DOMProperty.js","./ReactDefaultPerfAnalysis":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactDefaultPerfAnalysis.js","./ReactMount":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactMount.js","./ReactPerf":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactPerf.js","./performanceNow":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/performanceNow.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactDefaultPerfAnalysis.js":[function(require,module,exports){
+},{"./DOMProperty":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/DOMProperty.js","./ReactDefaultPerfAnalysis":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactDefaultPerfAnalysis.js","./ReactMount":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactMount.js","./ReactPerf":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactPerf.js","./performanceNow":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/performanceNow.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactDefaultPerfAnalysis.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -12193,7 +12321,7 @@ var ReactDefaultPerfAnalysis = {
 
 module.exports = ReactDefaultPerfAnalysis;
 
-},{"./Object.assign":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/Object.assign.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactElement.js":[function(require,module,exports){
+},{"./Object.assign":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/Object.assign.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactElement.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2014, Facebook, Inc.
@@ -12371,7 +12499,7 @@ ReactElement.createElement = function(type, config, children) {
   }
 
   // Resolve default props
-  if (type.defaultProps) {
+  if (type && type.defaultProps) {
     var defaultProps = type.defaultProps;
     for (propName in defaultProps) {
       if (typeof props[propName] === 'undefined') {
@@ -12439,7 +12567,9 @@ ReactElement.isValidElement = function(object) {
 module.exports = ReactElement;
 
 }).call(this,require('_process'))
-},{"./ReactContext":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactContext.js","./ReactCurrentOwner":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactCurrentOwner.js","./warning":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/warning.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactElementValidator.js":[function(require,module,exports){
+
+},{"./ReactContext":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactContext.js","./ReactCurrentOwner":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactCurrentOwner.js","./warning":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/warning.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactElementValidator.js":[function(require,module,exports){
+(function (process){
 /**
  * Copyright 2014, Facebook, Inc.
  * All rights reserved.
@@ -12465,6 +12595,7 @@ var ReactPropTypeLocations = require("./ReactPropTypeLocations");
 var ReactCurrentOwner = require("./ReactCurrentOwner");
 
 var monitorCodeUse = require("./monitorCodeUse");
+var warning = require("./warning");
 
 /**
  * Warn if there's no key explicitly set on dynamic arrays of children or
@@ -12662,6 +12793,15 @@ function checkPropTypes(componentName, propTypes, props, location) {
 var ReactElementValidator = {
 
   createElement: function(type, props, children) {
+    // We warn in this case but don't throw. We expect the element creation to
+    // succeed and there will likely be errors in render.
+    ("production" !== process.env.NODE_ENV ? warning(
+      type != null,
+      'React.createElement: type should not be null or undefined. It should ' +
+        'be a string (for DOM elements) or a ReactClass (for composite ' +
+        'components).'
+    ) : null);
+
     var element = ReactElement.createElement.apply(this, arguments);
 
     // The result can be nullish if a mock or a custom function is used.
@@ -12674,22 +12814,24 @@ var ReactElementValidator = {
       validateChildKeys(arguments[i], type);
     }
 
-    var name = type.displayName;
-    if (type.propTypes) {
-      checkPropTypes(
-        name,
-        type.propTypes,
-        element.props,
-        ReactPropTypeLocations.prop
-      );
-    }
-    if (type.contextTypes) {
-      checkPropTypes(
-        name,
-        type.contextTypes,
-        element._context,
-        ReactPropTypeLocations.context
-      );
+    if (type) {
+      var name = type.displayName;
+      if (type.propTypes) {
+        checkPropTypes(
+          name,
+          type.propTypes,
+          element.props,
+          ReactPropTypeLocations.prop
+        );
+      }
+      if (type.contextTypes) {
+        checkPropTypes(
+          name,
+          type.contextTypes,
+          element._context,
+          ReactPropTypeLocations.context
+        );
+      }
     }
     return element;
   },
@@ -12707,7 +12849,9 @@ var ReactElementValidator = {
 
 module.exports = ReactElementValidator;
 
-},{"./ReactCurrentOwner":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactCurrentOwner.js","./ReactElement":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactElement.js","./ReactPropTypeLocations":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactPropTypeLocations.js","./monitorCodeUse":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/monitorCodeUse.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactEmptyComponent.js":[function(require,module,exports){
+}).call(this,require('_process'))
+
+},{"./ReactCurrentOwner":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactCurrentOwner.js","./ReactElement":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactElement.js","./ReactPropTypeLocations":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactPropTypeLocations.js","./monitorCodeUse":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/monitorCodeUse.js","./warning":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/warning.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactEmptyComponent.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2014, Facebook, Inc.
@@ -12784,7 +12928,8 @@ var ReactEmptyComponent = {
 module.exports = ReactEmptyComponent;
 
 }).call(this,require('_process'))
-},{"./ReactElement":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactElement.js","./invariant":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/invariant.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactErrorUtils.js":[function(require,module,exports){
+
+},{"./ReactElement":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactElement.js","./invariant":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/invariant.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactErrorUtils.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -12816,7 +12961,7 @@ var ReactErrorUtils = {
 
 module.exports = ReactErrorUtils;
 
-},{}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactEventEmitterMixin.js":[function(require,module,exports){
+},{}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactEventEmitterMixin.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -12866,7 +13011,7 @@ var ReactEventEmitterMixin = {
 
 module.exports = ReactEventEmitterMixin;
 
-},{"./EventPluginHub":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/EventPluginHub.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactEventListener.js":[function(require,module,exports){
+},{"./EventPluginHub":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/EventPluginHub.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactEventListener.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -13050,7 +13195,7 @@ var ReactEventListener = {
 
 module.exports = ReactEventListener;
 
-},{"./EventListener":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/EventListener.js","./ExecutionEnvironment":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ExecutionEnvironment.js","./Object.assign":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/Object.assign.js","./PooledClass":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/PooledClass.js","./ReactInstanceHandles":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactInstanceHandles.js","./ReactMount":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactMount.js","./ReactUpdates":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactUpdates.js","./getEventTarget":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/getEventTarget.js","./getUnboundedScrollPosition":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/getUnboundedScrollPosition.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactInjection.js":[function(require,module,exports){
+},{"./EventListener":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/EventListener.js","./ExecutionEnvironment":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ExecutionEnvironment.js","./Object.assign":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/Object.assign.js","./PooledClass":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/PooledClass.js","./ReactInstanceHandles":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactInstanceHandles.js","./ReactMount":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactMount.js","./ReactUpdates":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactUpdates.js","./getEventTarget":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/getEventTarget.js","./getUnboundedScrollPosition":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/getUnboundedScrollPosition.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactInjection.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -13090,7 +13235,7 @@ var ReactInjection = {
 
 module.exports = ReactInjection;
 
-},{"./DOMProperty":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/DOMProperty.js","./EventPluginHub":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/EventPluginHub.js","./ReactBrowserEventEmitter":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactBrowserEventEmitter.js","./ReactComponent":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactComponent.js","./ReactCompositeComponent":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactCompositeComponent.js","./ReactEmptyComponent":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactEmptyComponent.js","./ReactNativeComponent":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactNativeComponent.js","./ReactPerf":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactPerf.js","./ReactRootIndex":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactRootIndex.js","./ReactUpdates":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactUpdates.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactInputSelection.js":[function(require,module,exports){
+},{"./DOMProperty":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/DOMProperty.js","./EventPluginHub":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/EventPluginHub.js","./ReactBrowserEventEmitter":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactBrowserEventEmitter.js","./ReactComponent":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactComponent.js","./ReactCompositeComponent":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactCompositeComponent.js","./ReactEmptyComponent":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactEmptyComponent.js","./ReactNativeComponent":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactNativeComponent.js","./ReactPerf":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactPerf.js","./ReactRootIndex":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactRootIndex.js","./ReactUpdates":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactUpdates.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactInputSelection.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -13226,7 +13371,7 @@ var ReactInputSelection = {
 
 module.exports = ReactInputSelection;
 
-},{"./ReactDOMSelection":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactDOMSelection.js","./containsNode":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/containsNode.js","./focusNode":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/focusNode.js","./getActiveElement":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/getActiveElement.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactInstanceHandles.js":[function(require,module,exports){
+},{"./ReactDOMSelection":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactDOMSelection.js","./containsNode":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/containsNode.js","./focusNode":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/focusNode.js","./getActiveElement":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/getActiveElement.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactInstanceHandles.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2014, Facebook, Inc.
@@ -13561,7 +13706,8 @@ var ReactInstanceHandles = {
 module.exports = ReactInstanceHandles;
 
 }).call(this,require('_process'))
-},{"./ReactRootIndex":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactRootIndex.js","./invariant":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/invariant.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactLegacyElement.js":[function(require,module,exports){
+
+},{"./ReactRootIndex":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactRootIndex.js","./invariant":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/invariant.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactLegacyElement.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2014, Facebook, Inc.
@@ -13808,7 +13954,8 @@ ReactLegacyElementFactory._isLegacyCallWarningEnabled = true;
 module.exports = ReactLegacyElementFactory;
 
 }).call(this,require('_process'))
-},{"./ReactCurrentOwner":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactCurrentOwner.js","./invariant":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/invariant.js","./monitorCodeUse":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/monitorCodeUse.js","./warning":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/warning.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactLink.js":[function(require,module,exports){
+
+},{"./ReactCurrentOwner":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactCurrentOwner.js","./invariant":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/invariant.js","./monitorCodeUse":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/monitorCodeUse.js","./warning":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/warning.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactLink.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -13881,7 +14028,7 @@ ReactLink.PropTypes = {
 
 module.exports = ReactLink;
 
-},{"./React":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/React.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactMarkupChecksum.js":[function(require,module,exports){
+},{"./React":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/React.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactMarkupChecksum.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -13929,7 +14076,7 @@ var ReactMarkupChecksum = {
 
 module.exports = ReactMarkupChecksum;
 
-},{"./adler32":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/adler32.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactMount.js":[function(require,module,exports){
+},{"./adler32":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/adler32.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactMount.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2014, Facebook, Inc.
@@ -14627,7 +14774,8 @@ ReactMount.renderComponent = deprecated(
 module.exports = ReactMount;
 
 }).call(this,require('_process'))
-},{"./DOMProperty":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/DOMProperty.js","./ReactBrowserEventEmitter":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactBrowserEventEmitter.js","./ReactCurrentOwner":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactCurrentOwner.js","./ReactElement":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactElement.js","./ReactInstanceHandles":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactInstanceHandles.js","./ReactLegacyElement":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactLegacyElement.js","./ReactPerf":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactPerf.js","./containsNode":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/containsNode.js","./deprecated":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/deprecated.js","./getReactRootElementInContainer":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/getReactRootElementInContainer.js","./instantiateReactComponent":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/instantiateReactComponent.js","./invariant":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/invariant.js","./shouldUpdateReactComponent":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/shouldUpdateReactComponent.js","./warning":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/warning.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactMultiChild.js":[function(require,module,exports){
+
+},{"./DOMProperty":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/DOMProperty.js","./ReactBrowserEventEmitter":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactBrowserEventEmitter.js","./ReactCurrentOwner":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactCurrentOwner.js","./ReactElement":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactElement.js","./ReactInstanceHandles":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactInstanceHandles.js","./ReactLegacyElement":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactLegacyElement.js","./ReactPerf":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactPerf.js","./containsNode":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/containsNode.js","./deprecated":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/deprecated.js","./getReactRootElementInContainer":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/getReactRootElementInContainer.js","./instantiateReactComponent":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/instantiateReactComponent.js","./invariant":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/invariant.js","./shouldUpdateReactComponent":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/shouldUpdateReactComponent.js","./warning":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/warning.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactMultiChild.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -15055,7 +15203,7 @@ var ReactMultiChild = {
 
 module.exports = ReactMultiChild;
 
-},{"./ReactComponent":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactComponent.js","./ReactMultiChildUpdateTypes":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactMultiChildUpdateTypes.js","./flattenChildren":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/flattenChildren.js","./instantiateReactComponent":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/instantiateReactComponent.js","./shouldUpdateReactComponent":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/shouldUpdateReactComponent.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactMultiChildUpdateTypes.js":[function(require,module,exports){
+},{"./ReactComponent":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactComponent.js","./ReactMultiChildUpdateTypes":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactMultiChildUpdateTypes.js","./flattenChildren":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/flattenChildren.js","./instantiateReactComponent":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/instantiateReactComponent.js","./shouldUpdateReactComponent":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/shouldUpdateReactComponent.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactMultiChildUpdateTypes.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -15088,7 +15236,7 @@ var ReactMultiChildUpdateTypes = keyMirror({
 
 module.exports = ReactMultiChildUpdateTypes;
 
-},{"./keyMirror":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/keyMirror.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactNativeComponent.js":[function(require,module,exports){
+},{"./keyMirror":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/keyMirror.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactNativeComponent.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2014, Facebook, Inc.
@@ -15155,13 +15303,14 @@ function createInstanceForTag(tag, props, parentType) {
 
 var ReactNativeComponent = {
   createInstanceForTag: createInstanceForTag,
-  injection: ReactNativeComponentInjection,
+  injection: ReactNativeComponentInjection
 };
 
 module.exports = ReactNativeComponent;
 
 }).call(this,require('_process'))
-},{"./Object.assign":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/Object.assign.js","./invariant":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/invariant.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactOwner.js":[function(require,module,exports){
+
+},{"./Object.assign":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/Object.assign.js","./invariant":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/invariant.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactOwner.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2014, Facebook, Inc.
@@ -15317,7 +15466,8 @@ var ReactOwner = {
 module.exports = ReactOwner;
 
 }).call(this,require('_process'))
-},{"./emptyObject":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/emptyObject.js","./invariant":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/invariant.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactPerf.js":[function(require,module,exports){
+
+},{"./emptyObject":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/emptyObject.js","./invariant":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/invariant.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactPerf.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2014, Facebook, Inc.
@@ -15401,7 +15551,8 @@ function _noMeasure(objName, fnName, func) {
 module.exports = ReactPerf;
 
 }).call(this,require('_process'))
-},{"_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactPropTransferer.js":[function(require,module,exports){
+
+},{"_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactPropTransferer.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2014, Facebook, Inc.
@@ -15568,7 +15719,8 @@ var ReactPropTransferer = {
 module.exports = ReactPropTransferer;
 
 }).call(this,require('_process'))
-},{"./Object.assign":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/Object.assign.js","./emptyFunction":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/emptyFunction.js","./invariant":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/invariant.js","./joinClasses":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/joinClasses.js","./warning":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/warning.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactPropTypeLocationNames.js":[function(require,module,exports){
+
+},{"./Object.assign":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/Object.assign.js","./emptyFunction":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/emptyFunction.js","./invariant":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/invariant.js","./joinClasses":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/joinClasses.js","./warning":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/warning.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactPropTypeLocationNames.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2014, Facebook, Inc.
@@ -15596,7 +15748,8 @@ if ("production" !== process.env.NODE_ENV) {
 module.exports = ReactPropTypeLocationNames;
 
 }).call(this,require('_process'))
-},{"_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactPropTypeLocations.js":[function(require,module,exports){
+
+},{"_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactPropTypeLocations.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -15620,7 +15773,7 @@ var ReactPropTypeLocations = keyMirror({
 
 module.exports = ReactPropTypeLocations;
 
-},{"./keyMirror":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/keyMirror.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactPropTypes.js":[function(require,module,exports){
+},{"./keyMirror":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/keyMirror.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactPropTypes.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -15974,7 +16127,7 @@ function getPreciseType(propValue) {
 
 module.exports = ReactPropTypes;
 
-},{"./ReactElement":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactElement.js","./ReactPropTypeLocationNames":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactPropTypeLocationNames.js","./deprecated":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/deprecated.js","./emptyFunction":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/emptyFunction.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactPutListenerQueue.js":[function(require,module,exports){
+},{"./ReactElement":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactElement.js","./ReactPropTypeLocationNames":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactPropTypeLocationNames.js","./deprecated":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/deprecated.js","./emptyFunction":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/emptyFunction.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactPutListenerQueue.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -16030,7 +16183,7 @@ PooledClass.addPoolingTo(ReactPutListenerQueue);
 
 module.exports = ReactPutListenerQueue;
 
-},{"./Object.assign":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/Object.assign.js","./PooledClass":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/PooledClass.js","./ReactBrowserEventEmitter":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactBrowserEventEmitter.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactReconcileTransaction.js":[function(require,module,exports){
+},{"./Object.assign":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/Object.assign.js","./PooledClass":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/PooledClass.js","./ReactBrowserEventEmitter":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactBrowserEventEmitter.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactReconcileTransaction.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -16206,7 +16359,7 @@ PooledClass.addPoolingTo(ReactReconcileTransaction);
 
 module.exports = ReactReconcileTransaction;
 
-},{"./CallbackQueue":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/CallbackQueue.js","./Object.assign":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/Object.assign.js","./PooledClass":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/PooledClass.js","./ReactBrowserEventEmitter":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactBrowserEventEmitter.js","./ReactInputSelection":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactInputSelection.js","./ReactPutListenerQueue":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactPutListenerQueue.js","./Transaction":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/Transaction.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactRootIndex.js":[function(require,module,exports){
+},{"./CallbackQueue":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/CallbackQueue.js","./Object.assign":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/Object.assign.js","./PooledClass":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/PooledClass.js","./ReactBrowserEventEmitter":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactBrowserEventEmitter.js","./ReactInputSelection":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactInputSelection.js","./ReactPutListenerQueue":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactPutListenerQueue.js","./Transaction":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/Transaction.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactRootIndex.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -16237,7 +16390,7 @@ var ReactRootIndex = {
 
 module.exports = ReactRootIndex;
 
-},{}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactServerRendering.js":[function(require,module,exports){
+},{}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactServerRendering.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2014, Facebook, Inc.
@@ -16317,7 +16470,8 @@ module.exports = {
 };
 
 }).call(this,require('_process'))
-},{"./ReactElement":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactElement.js","./ReactInstanceHandles":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactInstanceHandles.js","./ReactMarkupChecksum":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactMarkupChecksum.js","./ReactServerRenderingTransaction":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactServerRenderingTransaction.js","./instantiateReactComponent":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/instantiateReactComponent.js","./invariant":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/invariant.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactServerRenderingTransaction.js":[function(require,module,exports){
+
+},{"./ReactElement":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactElement.js","./ReactInstanceHandles":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactInstanceHandles.js","./ReactMarkupChecksum":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactMarkupChecksum.js","./ReactServerRenderingTransaction":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactServerRenderingTransaction.js","./instantiateReactComponent":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/instantiateReactComponent.js","./invariant":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/invariant.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactServerRenderingTransaction.js":[function(require,module,exports){
 /**
  * Copyright 2014, Facebook, Inc.
  * All rights reserved.
@@ -16430,7 +16584,7 @@ PooledClass.addPoolingTo(ReactServerRenderingTransaction);
 
 module.exports = ReactServerRenderingTransaction;
 
-},{"./CallbackQueue":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/CallbackQueue.js","./Object.assign":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/Object.assign.js","./PooledClass":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/PooledClass.js","./ReactPutListenerQueue":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactPutListenerQueue.js","./Transaction":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/Transaction.js","./emptyFunction":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/emptyFunction.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactStateSetters.js":[function(require,module,exports){
+},{"./CallbackQueue":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/CallbackQueue.js","./Object.assign":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/Object.assign.js","./PooledClass":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/PooledClass.js","./ReactPutListenerQueue":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactPutListenerQueue.js","./Transaction":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/Transaction.js","./emptyFunction":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/emptyFunction.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactStateSetters.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -16536,7 +16690,7 @@ ReactStateSetters.Mixin = {
 
 module.exports = ReactStateSetters;
 
-},{}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactTestUtils.js":[function(require,module,exports){
+},{}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactTestUtils.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -16770,7 +16924,7 @@ var ReactTestUtils = {
   mockComponent: function(module, mockTagName) {
     mockTagName = mockTagName || module.mockTagName || "div";
 
-    var ConvenienceConstructor = React.createClass({displayName: 'ConvenienceConstructor',
+    var ConvenienceConstructor = React.createClass({displayName: "ConvenienceConstructor",
       render: function() {
         return React.createElement(
           mockTagName,
@@ -16948,7 +17102,7 @@ for (eventType in topLevelTypes) {
 
 module.exports = ReactTestUtils;
 
-},{"./EventConstants":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/EventConstants.js","./EventPluginHub":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/EventPluginHub.js","./EventPropagators":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/EventPropagators.js","./Object.assign":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/Object.assign.js","./React":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/React.js","./ReactBrowserEventEmitter":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactBrowserEventEmitter.js","./ReactElement":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactElement.js","./ReactMount":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactMount.js","./ReactTextComponent":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactTextComponent.js","./ReactUpdates":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactUpdates.js","./SyntheticEvent":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/SyntheticEvent.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactTextComponent.js":[function(require,module,exports){
+},{"./EventConstants":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/EventConstants.js","./EventPluginHub":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/EventPluginHub.js","./EventPropagators":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/EventPropagators.js","./Object.assign":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/Object.assign.js","./React":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/React.js","./ReactBrowserEventEmitter":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactBrowserEventEmitter.js","./ReactElement":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactElement.js","./ReactMount":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactMount.js","./ReactTextComponent":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactTextComponent.js","./ReactUpdates":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactUpdates.js","./SyntheticEvent":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/SyntheticEvent.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactTextComponent.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -17054,7 +17208,7 @@ ReactTextComponentFactory.type = ReactTextComponent;
 
 module.exports = ReactTextComponentFactory;
 
-},{"./DOMPropertyOperations":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/DOMPropertyOperations.js","./Object.assign":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/Object.assign.js","./ReactComponent":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactComponent.js","./ReactElement":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactElement.js","./escapeTextForBrowser":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/escapeTextForBrowser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactTransitionChildMapping.js":[function(require,module,exports){
+},{"./DOMPropertyOperations":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/DOMPropertyOperations.js","./Object.assign":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/Object.assign.js","./ReactComponent":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactComponent.js","./ReactElement":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactElement.js","./escapeTextForBrowser":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/escapeTextForBrowser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactTransitionChildMapping.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -17155,7 +17309,7 @@ var ReactTransitionChildMapping = {
 
 module.exports = ReactTransitionChildMapping;
 
-},{"./ReactChildren":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactChildren.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactTransitionEvents.js":[function(require,module,exports){
+},{"./ReactChildren":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactChildren.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactTransitionEvents.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -17266,7 +17420,7 @@ var ReactTransitionEvents = {
 
 module.exports = ReactTransitionEvents;
 
-},{"./ExecutionEnvironment":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ExecutionEnvironment.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactTransitionGroup.js":[function(require,module,exports){
+},{"./ExecutionEnvironment":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ExecutionEnvironment.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactTransitionGroup.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -17455,7 +17609,7 @@ var ReactTransitionGroup = React.createClass({
 
 module.exports = ReactTransitionGroup;
 
-},{"./Object.assign":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/Object.assign.js","./React":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/React.js","./ReactTransitionChildMapping":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactTransitionChildMapping.js","./cloneWithProps":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/cloneWithProps.js","./emptyFunction":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/emptyFunction.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactUpdates.js":[function(require,module,exports){
+},{"./Object.assign":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/Object.assign.js","./React":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/React.js","./ReactTransitionChildMapping":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactTransitionChildMapping.js","./cloneWithProps":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/cloneWithProps.js","./emptyFunction":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/emptyFunction.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactUpdates.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2014, Facebook, Inc.
@@ -17745,7 +17899,8 @@ var ReactUpdates = {
 module.exports = ReactUpdates;
 
 }).call(this,require('_process'))
-},{"./CallbackQueue":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/CallbackQueue.js","./Object.assign":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/Object.assign.js","./PooledClass":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/PooledClass.js","./ReactCurrentOwner":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactCurrentOwner.js","./ReactPerf":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactPerf.js","./Transaction":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/Transaction.js","./invariant":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/invariant.js","./warning":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/warning.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactWithAddons.js":[function(require,module,exports){
+
+},{"./CallbackQueue":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/CallbackQueue.js","./Object.assign":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/Object.assign.js","./PooledClass":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/PooledClass.js","./ReactCurrentOwner":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactCurrentOwner.js","./ReactPerf":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactPerf.js","./Transaction":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/Transaction.js","./invariant":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/invariant.js","./warning":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/warning.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactWithAddons.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2014, Facebook, Inc.
@@ -17799,7 +17954,8 @@ if ("production" !== process.env.NODE_ENV) {
 module.exports = React;
 
 }).call(this,require('_process'))
-},{"./LinkedStateMixin":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/LinkedStateMixin.js","./React":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/React.js","./ReactCSSTransitionGroup":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactCSSTransitionGroup.js","./ReactComponentWithPureRenderMixin":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactComponentWithPureRenderMixin.js","./ReactDefaultPerf":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactDefaultPerf.js","./ReactTestUtils":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactTestUtils.js","./ReactTransitionGroup":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactTransitionGroup.js","./ReactUpdates":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactUpdates.js","./cloneWithProps":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/cloneWithProps.js","./cx":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/cx.js","./update":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/update.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/SVGDOMPropertyConfig.js":[function(require,module,exports){
+
+},{"./LinkedStateMixin":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/LinkedStateMixin.js","./React":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/React.js","./ReactCSSTransitionGroup":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactCSSTransitionGroup.js","./ReactComponentWithPureRenderMixin":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactComponentWithPureRenderMixin.js","./ReactDefaultPerf":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactDefaultPerf.js","./ReactTestUtils":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactTestUtils.js","./ReactTransitionGroup":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactTransitionGroup.js","./ReactUpdates":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactUpdates.js","./cloneWithProps":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/cloneWithProps.js","./cx":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/cx.js","./update":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/update.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/SVGDOMPropertyConfig.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -17891,7 +18047,7 @@ var SVGDOMPropertyConfig = {
 
 module.exports = SVGDOMPropertyConfig;
 
-},{"./DOMProperty":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/DOMProperty.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/SelectEventPlugin.js":[function(require,module,exports){
+},{"./DOMProperty":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/DOMProperty.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/SelectEventPlugin.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -18086,7 +18242,7 @@ var SelectEventPlugin = {
 
 module.exports = SelectEventPlugin;
 
-},{"./EventConstants":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/EventConstants.js","./EventPropagators":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/EventPropagators.js","./ReactInputSelection":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactInputSelection.js","./SyntheticEvent":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/SyntheticEvent.js","./getActiveElement":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/getActiveElement.js","./isTextInputElement":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/isTextInputElement.js","./keyOf":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/keyOf.js","./shallowEqual":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/shallowEqual.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ServerReactRootIndex.js":[function(require,module,exports){
+},{"./EventConstants":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/EventConstants.js","./EventPropagators":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/EventPropagators.js","./ReactInputSelection":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactInputSelection.js","./SyntheticEvent":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/SyntheticEvent.js","./getActiveElement":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/getActiveElement.js","./isTextInputElement":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/isTextInputElement.js","./keyOf":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/keyOf.js","./shallowEqual":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/shallowEqual.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ServerReactRootIndex.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -18117,7 +18273,7 @@ var ServerReactRootIndex = {
 
 module.exports = ServerReactRootIndex;
 
-},{}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/SimpleEventPlugin.js":[function(require,module,exports){
+},{}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/SimpleEventPlugin.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2014, Facebook, Inc.
@@ -18545,7 +18701,8 @@ var SimpleEventPlugin = {
 module.exports = SimpleEventPlugin;
 
 }).call(this,require('_process'))
-},{"./EventConstants":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/EventConstants.js","./EventPluginUtils":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/EventPluginUtils.js","./EventPropagators":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/EventPropagators.js","./SyntheticClipboardEvent":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/SyntheticClipboardEvent.js","./SyntheticDragEvent":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/SyntheticDragEvent.js","./SyntheticEvent":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/SyntheticEvent.js","./SyntheticFocusEvent":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/SyntheticFocusEvent.js","./SyntheticKeyboardEvent":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/SyntheticKeyboardEvent.js","./SyntheticMouseEvent":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/SyntheticMouseEvent.js","./SyntheticTouchEvent":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/SyntheticTouchEvent.js","./SyntheticUIEvent":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/SyntheticUIEvent.js","./SyntheticWheelEvent":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/SyntheticWheelEvent.js","./getEventCharCode":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/getEventCharCode.js","./invariant":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/invariant.js","./keyOf":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/keyOf.js","./warning":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/warning.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/SyntheticClipboardEvent.js":[function(require,module,exports){
+
+},{"./EventConstants":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/EventConstants.js","./EventPluginUtils":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/EventPluginUtils.js","./EventPropagators":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/EventPropagators.js","./SyntheticClipboardEvent":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/SyntheticClipboardEvent.js","./SyntheticDragEvent":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/SyntheticDragEvent.js","./SyntheticEvent":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/SyntheticEvent.js","./SyntheticFocusEvent":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/SyntheticFocusEvent.js","./SyntheticKeyboardEvent":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/SyntheticKeyboardEvent.js","./SyntheticMouseEvent":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/SyntheticMouseEvent.js","./SyntheticTouchEvent":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/SyntheticTouchEvent.js","./SyntheticUIEvent":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/SyntheticUIEvent.js","./SyntheticWheelEvent":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/SyntheticWheelEvent.js","./getEventCharCode":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/getEventCharCode.js","./invariant":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/invariant.js","./keyOf":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/keyOf.js","./warning":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/warning.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/SyntheticClipboardEvent.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -18591,7 +18748,7 @@ SyntheticEvent.augmentClass(SyntheticClipboardEvent, ClipboardEventInterface);
 module.exports = SyntheticClipboardEvent;
 
 
-},{"./SyntheticEvent":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/SyntheticEvent.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/SyntheticCompositionEvent.js":[function(require,module,exports){
+},{"./SyntheticEvent":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/SyntheticEvent.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/SyntheticCompositionEvent.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -18637,7 +18794,7 @@ SyntheticEvent.augmentClass(
 module.exports = SyntheticCompositionEvent;
 
 
-},{"./SyntheticEvent":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/SyntheticEvent.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/SyntheticDragEvent.js":[function(require,module,exports){
+},{"./SyntheticEvent":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/SyntheticEvent.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/SyntheticDragEvent.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -18676,7 +18833,7 @@ SyntheticMouseEvent.augmentClass(SyntheticDragEvent, DragEventInterface);
 
 module.exports = SyntheticDragEvent;
 
-},{"./SyntheticMouseEvent":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/SyntheticMouseEvent.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/SyntheticEvent.js":[function(require,module,exports){
+},{"./SyntheticMouseEvent":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/SyntheticMouseEvent.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/SyntheticEvent.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -18834,7 +18991,7 @@ PooledClass.addPoolingTo(SyntheticEvent, PooledClass.threeArgumentPooler);
 
 module.exports = SyntheticEvent;
 
-},{"./Object.assign":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/Object.assign.js","./PooledClass":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/PooledClass.js","./emptyFunction":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/emptyFunction.js","./getEventTarget":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/getEventTarget.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/SyntheticFocusEvent.js":[function(require,module,exports){
+},{"./Object.assign":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/Object.assign.js","./PooledClass":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/PooledClass.js","./emptyFunction":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/emptyFunction.js","./getEventTarget":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/getEventTarget.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/SyntheticFocusEvent.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -18873,7 +19030,7 @@ SyntheticUIEvent.augmentClass(SyntheticFocusEvent, FocusEventInterface);
 
 module.exports = SyntheticFocusEvent;
 
-},{"./SyntheticUIEvent":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/SyntheticUIEvent.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/SyntheticInputEvent.js":[function(require,module,exports){
+},{"./SyntheticUIEvent":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/SyntheticUIEvent.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/SyntheticInputEvent.js":[function(require,module,exports){
 /**
  * Copyright 2013 Facebook, Inc.
  * All rights reserved.
@@ -18920,7 +19077,7 @@ SyntheticEvent.augmentClass(
 module.exports = SyntheticInputEvent;
 
 
-},{"./SyntheticEvent":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/SyntheticEvent.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/SyntheticKeyboardEvent.js":[function(require,module,exports){
+},{"./SyntheticEvent":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/SyntheticEvent.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/SyntheticKeyboardEvent.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -19007,7 +19164,7 @@ SyntheticUIEvent.augmentClass(SyntheticKeyboardEvent, KeyboardEventInterface);
 
 module.exports = SyntheticKeyboardEvent;
 
-},{"./SyntheticUIEvent":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/SyntheticUIEvent.js","./getEventCharCode":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/getEventCharCode.js","./getEventKey":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/getEventKey.js","./getEventModifierState":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/getEventModifierState.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/SyntheticMouseEvent.js":[function(require,module,exports){
+},{"./SyntheticUIEvent":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/SyntheticUIEvent.js","./getEventCharCode":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/getEventCharCode.js","./getEventKey":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/getEventKey.js","./getEventModifierState":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/getEventModifierState.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/SyntheticMouseEvent.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -19090,7 +19247,7 @@ SyntheticUIEvent.augmentClass(SyntheticMouseEvent, MouseEventInterface);
 
 module.exports = SyntheticMouseEvent;
 
-},{"./SyntheticUIEvent":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/SyntheticUIEvent.js","./ViewportMetrics":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ViewportMetrics.js","./getEventModifierState":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/getEventModifierState.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/SyntheticTouchEvent.js":[function(require,module,exports){
+},{"./SyntheticUIEvent":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/SyntheticUIEvent.js","./ViewportMetrics":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ViewportMetrics.js","./getEventModifierState":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/getEventModifierState.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/SyntheticTouchEvent.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -19138,7 +19295,7 @@ SyntheticUIEvent.augmentClass(SyntheticTouchEvent, TouchEventInterface);
 
 module.exports = SyntheticTouchEvent;
 
-},{"./SyntheticUIEvent":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/SyntheticUIEvent.js","./getEventModifierState":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/getEventModifierState.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/SyntheticUIEvent.js":[function(require,module,exports){
+},{"./SyntheticUIEvent":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/SyntheticUIEvent.js","./getEventModifierState":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/getEventModifierState.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/SyntheticUIEvent.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -19200,7 +19357,7 @@ SyntheticEvent.augmentClass(SyntheticUIEvent, UIEventInterface);
 
 module.exports = SyntheticUIEvent;
 
-},{"./SyntheticEvent":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/SyntheticEvent.js","./getEventTarget":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/getEventTarget.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/SyntheticWheelEvent.js":[function(require,module,exports){
+},{"./SyntheticEvent":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/SyntheticEvent.js","./getEventTarget":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/getEventTarget.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/SyntheticWheelEvent.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -19261,7 +19418,7 @@ SyntheticMouseEvent.augmentClass(SyntheticWheelEvent, WheelEventInterface);
 
 module.exports = SyntheticWheelEvent;
 
-},{"./SyntheticMouseEvent":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/SyntheticMouseEvent.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/Transaction.js":[function(require,module,exports){
+},{"./SyntheticMouseEvent":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/SyntheticMouseEvent.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/Transaction.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2014, Facebook, Inc.
@@ -19502,7 +19659,8 @@ var Transaction = {
 module.exports = Transaction;
 
 }).call(this,require('_process'))
-},{"./invariant":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/invariant.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ViewportMetrics.js":[function(require,module,exports){
+
+},{"./invariant":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/invariant.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ViewportMetrics.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -19534,7 +19692,7 @@ var ViewportMetrics = {
 
 module.exports = ViewportMetrics;
 
-},{"./getUnboundedScrollPosition":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/getUnboundedScrollPosition.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/accumulateInto.js":[function(require,module,exports){
+},{"./getUnboundedScrollPosition":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/getUnboundedScrollPosition.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/accumulateInto.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2014, Facebook, Inc.
@@ -19600,7 +19758,8 @@ function accumulateInto(current, next) {
 module.exports = accumulateInto;
 
 }).call(this,require('_process'))
-},{"./invariant":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/invariant.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/adler32.js":[function(require,module,exports){
+
+},{"./invariant":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/invariant.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/adler32.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -19634,7 +19793,7 @@ function adler32(data) {
 
 module.exports = adler32;
 
-},{}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/camelize.js":[function(require,module,exports){
+},{}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/camelize.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -19666,7 +19825,7 @@ function camelize(string) {
 
 module.exports = camelize;
 
-},{}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/camelizeStyleName.js":[function(require,module,exports){
+},{}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/camelizeStyleName.js":[function(require,module,exports){
 /**
  * Copyright 2014, Facebook, Inc.
  * All rights reserved.
@@ -19708,7 +19867,7 @@ function camelizeStyleName(string) {
 
 module.exports = camelizeStyleName;
 
-},{"./camelize":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/camelize.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/cloneWithProps.js":[function(require,module,exports){
+},{"./camelize":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/camelize.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/cloneWithProps.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2014, Facebook, Inc.
@@ -19767,7 +19926,8 @@ function cloneWithProps(child, props) {
 module.exports = cloneWithProps;
 
 }).call(this,require('_process'))
-},{"./ReactElement":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactElement.js","./ReactPropTransferer":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactPropTransferer.js","./keyOf":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/keyOf.js","./warning":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/warning.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/containsNode.js":[function(require,module,exports){
+
+},{"./ReactElement":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactElement.js","./ReactPropTransferer":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactPropTransferer.js","./keyOf":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/keyOf.js","./warning":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/warning.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/containsNode.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -19811,7 +19971,7 @@ function containsNode(outerNode, innerNode) {
 
 module.exports = containsNode;
 
-},{"./isTextNode":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/isTextNode.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/createArrayFrom.js":[function(require,module,exports){
+},{"./isTextNode":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/isTextNode.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/createArrayFrom.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -19897,7 +20057,7 @@ function createArrayFrom(obj) {
 
 module.exports = createArrayFrom;
 
-},{"./toArray":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/toArray.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/createFullPageComponent.js":[function(require,module,exports){
+},{"./toArray":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/toArray.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/createFullPageComponent.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2014, Facebook, Inc.
@@ -19958,7 +20118,8 @@ function createFullPageComponent(tag) {
 module.exports = createFullPageComponent;
 
 }).call(this,require('_process'))
-},{"./ReactCompositeComponent":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactCompositeComponent.js","./ReactElement":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactElement.js","./invariant":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/invariant.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/createNodesFromMarkup.js":[function(require,module,exports){
+
+},{"./ReactCompositeComponent":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactCompositeComponent.js","./ReactElement":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactElement.js","./invariant":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/invariant.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/createNodesFromMarkup.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2014, Facebook, Inc.
@@ -20048,7 +20209,8 @@ function createNodesFromMarkup(markup, handleScript) {
 module.exports = createNodesFromMarkup;
 
 }).call(this,require('_process'))
-},{"./ExecutionEnvironment":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ExecutionEnvironment.js","./createArrayFrom":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/createArrayFrom.js","./getMarkupWrap":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/getMarkupWrap.js","./invariant":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/invariant.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/cx.js":[function(require,module,exports){
+
+},{"./ExecutionEnvironment":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ExecutionEnvironment.js","./createArrayFrom":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/createArrayFrom.js","./getMarkupWrap":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/getMarkupWrap.js","./invariant":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/invariant.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/cx.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -20087,7 +20249,7 @@ function cx(classNames) {
 
 module.exports = cx;
 
-},{}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/dangerousStyleValue.js":[function(require,module,exports){
+},{}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/dangerousStyleValue.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -20145,7 +20307,7 @@ function dangerousStyleValue(name, value) {
 
 module.exports = dangerousStyleValue;
 
-},{"./CSSProperty":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/CSSProperty.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/deprecated.js":[function(require,module,exports){
+},{"./CSSProperty":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/CSSProperty.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/deprecated.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2014, Facebook, Inc.
@@ -20196,7 +20358,8 @@ function deprecated(namespace, oldName, newName, ctx, fn) {
 module.exports = deprecated;
 
 }).call(this,require('_process'))
-},{"./Object.assign":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/Object.assign.js","./warning":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/warning.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/emptyFunction.js":[function(require,module,exports){
+
+},{"./Object.assign":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/Object.assign.js","./warning":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/warning.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/emptyFunction.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -20230,7 +20393,7 @@ emptyFunction.thatReturnsArgument = function(arg) { return arg; };
 
 module.exports = emptyFunction;
 
-},{}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/emptyObject.js":[function(require,module,exports){
+},{}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/emptyObject.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2014, Facebook, Inc.
@@ -20254,7 +20417,8 @@ if ("production" !== process.env.NODE_ENV) {
 module.exports = emptyObject;
 
 }).call(this,require('_process'))
-},{"_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/escapeTextForBrowser.js":[function(require,module,exports){
+
+},{"_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/escapeTextForBrowser.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -20295,7 +20459,7 @@ function escapeTextForBrowser(text) {
 
 module.exports = escapeTextForBrowser;
 
-},{}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/flattenChildren.js":[function(require,module,exports){
+},{}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/flattenChildren.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2014, Facebook, Inc.
@@ -20364,7 +20528,8 @@ function flattenChildren(children) {
 module.exports = flattenChildren;
 
 }).call(this,require('_process'))
-},{"./ReactTextComponent":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactTextComponent.js","./traverseAllChildren":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/traverseAllChildren.js","./warning":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/warning.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/focusNode.js":[function(require,module,exports){
+
+},{"./ReactTextComponent":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactTextComponent.js","./traverseAllChildren":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/traverseAllChildren.js","./warning":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/warning.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/focusNode.js":[function(require,module,exports){
 /**
  * Copyright 2014, Facebook, Inc.
  * All rights reserved.
@@ -20393,7 +20558,7 @@ function focusNode(node) {
 
 module.exports = focusNode;
 
-},{}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/forEachAccumulated.js":[function(require,module,exports){
+},{}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/forEachAccumulated.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -20424,7 +20589,7 @@ var forEachAccumulated = function(arr, cb, scope) {
 
 module.exports = forEachAccumulated;
 
-},{}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/getActiveElement.js":[function(require,module,exports){
+},{}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/getActiveElement.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -20453,7 +20618,7 @@ function getActiveElement() /*?DOMElement*/ {
 
 module.exports = getActiveElement;
 
-},{}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/getEventCharCode.js":[function(require,module,exports){
+},{}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/getEventCharCode.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -20505,7 +20670,7 @@ function getEventCharCode(nativeEvent) {
 
 module.exports = getEventCharCode;
 
-},{}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/getEventKey.js":[function(require,module,exports){
+},{}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/getEventKey.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -20610,7 +20775,7 @@ function getEventKey(nativeEvent) {
 
 module.exports = getEventKey;
 
-},{"./getEventCharCode":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/getEventCharCode.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/getEventModifierState.js":[function(require,module,exports){
+},{"./getEventCharCode":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/getEventCharCode.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/getEventModifierState.js":[function(require,module,exports){
 /**
  * Copyright 2013 Facebook, Inc.
  * All rights reserved.
@@ -20657,7 +20822,7 @@ function getEventModifierState(nativeEvent) {
 
 module.exports = getEventModifierState;
 
-},{}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/getEventTarget.js":[function(require,module,exports){
+},{}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/getEventTarget.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -20688,7 +20853,7 @@ function getEventTarget(nativeEvent) {
 
 module.exports = getEventTarget;
 
-},{}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/getMarkupWrap.js":[function(require,module,exports){
+},{}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/getMarkupWrap.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2014, Facebook, Inc.
@@ -20805,7 +20970,8 @@ function getMarkupWrap(nodeName) {
 module.exports = getMarkupWrap;
 
 }).call(this,require('_process'))
-},{"./ExecutionEnvironment":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ExecutionEnvironment.js","./invariant":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/invariant.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/getNodeForCharacterOffset.js":[function(require,module,exports){
+
+},{"./ExecutionEnvironment":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ExecutionEnvironment.js","./invariant":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/invariant.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/getNodeForCharacterOffset.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -20880,7 +21046,7 @@ function getNodeForCharacterOffset(root, offset) {
 
 module.exports = getNodeForCharacterOffset;
 
-},{}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/getReactRootElementInContainer.js":[function(require,module,exports){
+},{}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/getReactRootElementInContainer.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -20915,7 +21081,7 @@ function getReactRootElementInContainer(container) {
 
 module.exports = getReactRootElementInContainer;
 
-},{}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/getTextContentAccessor.js":[function(require,module,exports){
+},{}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/getTextContentAccessor.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -20952,7 +21118,7 @@ function getTextContentAccessor() {
 
 module.exports = getTextContentAccessor;
 
-},{"./ExecutionEnvironment":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ExecutionEnvironment.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/getUnboundedScrollPosition.js":[function(require,module,exports){
+},{"./ExecutionEnvironment":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ExecutionEnvironment.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/getUnboundedScrollPosition.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -20992,7 +21158,7 @@ function getUnboundedScrollPosition(scrollable) {
 
 module.exports = getUnboundedScrollPosition;
 
-},{}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/hyphenate.js":[function(require,module,exports){
+},{}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/hyphenate.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -21025,7 +21191,7 @@ function hyphenate(string) {
 
 module.exports = hyphenate;
 
-},{}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/hyphenateStyleName.js":[function(require,module,exports){
+},{}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/hyphenateStyleName.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -21066,7 +21232,7 @@ function hyphenateStyleName(string) {
 
 module.exports = hyphenateStyleName;
 
-},{"./hyphenate":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/hyphenate.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/instantiateReactComponent.js":[function(require,module,exports){
+},{"./hyphenate":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/hyphenate.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/instantiateReactComponent.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2014, Facebook, Inc.
@@ -21180,7 +21346,8 @@ function instantiateReactComponent(element, parentCompositeType) {
 module.exports = instantiateReactComponent;
 
 }).call(this,require('_process'))
-},{"./ReactElement":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactElement.js","./ReactEmptyComponent":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactEmptyComponent.js","./ReactLegacyElement":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactLegacyElement.js","./ReactNativeComponent":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactNativeComponent.js","./warning":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/warning.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/invariant.js":[function(require,module,exports){
+
+},{"./ReactElement":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactElement.js","./ReactEmptyComponent":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactEmptyComponent.js","./ReactLegacyElement":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactLegacyElement.js","./ReactNativeComponent":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactNativeComponent.js","./warning":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/warning.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/invariant.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2014, Facebook, Inc.
@@ -21237,7 +21404,8 @@ var invariant = function(condition, format, a, b, c, d, e, f) {
 module.exports = invariant;
 
 }).call(this,require('_process'))
-},{"_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/isEventSupported.js":[function(require,module,exports){
+
+},{"_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/isEventSupported.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -21302,7 +21470,7 @@ function isEventSupported(eventNameSuffix, capture) {
 
 module.exports = isEventSupported;
 
-},{"./ExecutionEnvironment":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ExecutionEnvironment.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/isNode.js":[function(require,module,exports){
+},{"./ExecutionEnvironment":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ExecutionEnvironment.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/isNode.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -21330,7 +21498,7 @@ function isNode(object) {
 
 module.exports = isNode;
 
-},{}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/isTextInputElement.js":[function(require,module,exports){
+},{}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/isTextInputElement.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -21374,7 +21542,7 @@ function isTextInputElement(elem) {
 
 module.exports = isTextInputElement;
 
-},{}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/isTextNode.js":[function(require,module,exports){
+},{}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/isTextNode.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -21399,7 +21567,7 @@ function isTextNode(object) {
 
 module.exports = isTextNode;
 
-},{"./isNode":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/isNode.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/joinClasses.js":[function(require,module,exports){
+},{"./isNode":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/isNode.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/joinClasses.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -21440,7 +21608,7 @@ function joinClasses(className/*, ... */) {
 
 module.exports = joinClasses;
 
-},{}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/keyMirror.js":[function(require,module,exports){
+},{}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/keyMirror.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2014, Facebook, Inc.
@@ -21495,7 +21663,8 @@ var keyMirror = function(obj) {
 module.exports = keyMirror;
 
 }).call(this,require('_process'))
-},{"./invariant":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/invariant.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/keyOf.js":[function(require,module,exports){
+
+},{"./invariant":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/invariant.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/keyOf.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -21531,7 +21700,7 @@ var keyOf = function(oneKeyObj) {
 
 module.exports = keyOf;
 
-},{}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/mapObject.js":[function(require,module,exports){
+},{}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/mapObject.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -21584,7 +21753,7 @@ function mapObject(object, callback, context) {
 
 module.exports = mapObject;
 
-},{}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/memoizeStringOnly.js":[function(require,module,exports){
+},{}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/memoizeStringOnly.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -21618,7 +21787,7 @@ function memoizeStringOnly(callback) {
 
 module.exports = memoizeStringOnly;
 
-},{}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/monitorCodeUse.js":[function(require,module,exports){
+},{}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/monitorCodeUse.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2014, Facebook, Inc.
@@ -21652,7 +21821,8 @@ function monitorCodeUse(eventName, data) {
 module.exports = monitorCodeUse;
 
 }).call(this,require('_process'))
-},{"./invariant":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/invariant.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/onlyChild.js":[function(require,module,exports){
+
+},{"./invariant":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/invariant.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/onlyChild.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2014, Facebook, Inc.
@@ -21692,7 +21862,8 @@ function onlyChild(children) {
 module.exports = onlyChild;
 
 }).call(this,require('_process'))
-},{"./ReactElement":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactElement.js","./invariant":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/invariant.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/performance.js":[function(require,module,exports){
+
+},{"./ReactElement":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactElement.js","./invariant":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/invariant.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/performance.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -21720,7 +21891,7 @@ if (ExecutionEnvironment.canUseDOM) {
 
 module.exports = performance || {};
 
-},{"./ExecutionEnvironment":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ExecutionEnvironment.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/performanceNow.js":[function(require,module,exports){
+},{"./ExecutionEnvironment":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ExecutionEnvironment.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/performanceNow.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -21748,7 +21919,7 @@ var performanceNow = performance.now.bind(performance);
 
 module.exports = performanceNow;
 
-},{"./performance":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/performance.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/setInnerHTML.js":[function(require,module,exports){
+},{"./performance":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/performance.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/setInnerHTML.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -21826,7 +21997,7 @@ if (ExecutionEnvironment.canUseDOM) {
 
 module.exports = setInnerHTML;
 
-},{"./ExecutionEnvironment":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ExecutionEnvironment.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/shallowEqual.js":[function(require,module,exports){
+},{"./ExecutionEnvironment":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ExecutionEnvironment.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/shallowEqual.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -21870,7 +22041,7 @@ function shallowEqual(objA, objB) {
 
 module.exports = shallowEqual;
 
-},{}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/shouldUpdateReactComponent.js":[function(require,module,exports){
+},{}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/shouldUpdateReactComponent.js":[function(require,module,exports){
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -21908,7 +22079,7 @@ function shouldUpdateReactComponent(prevElement, nextElement) {
 
 module.exports = shouldUpdateReactComponent;
 
-},{}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/toArray.js":[function(require,module,exports){
+},{}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/toArray.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2014, Facebook, Inc.
@@ -21980,7 +22151,8 @@ function toArray(obj) {
 module.exports = toArray;
 
 }).call(this,require('_process'))
-},{"./invariant":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/invariant.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/traverseAllChildren.js":[function(require,module,exports){
+
+},{"./invariant":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/invariant.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/traverseAllChildren.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2014, Facebook, Inc.
@@ -22163,7 +22335,8 @@ function traverseAllChildren(children, callback, traverseContext) {
 module.exports = traverseAllChildren;
 
 }).call(this,require('_process'))
-},{"./ReactElement":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactElement.js","./ReactInstanceHandles":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/ReactInstanceHandles.js","./invariant":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/invariant.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/update.js":[function(require,module,exports){
+
+},{"./ReactElement":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactElement.js","./ReactInstanceHandles":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/ReactInstanceHandles.js","./invariant":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/invariant.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/update.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2014, Facebook, Inc.
@@ -22331,7 +22504,8 @@ function update(value, spec) {
 module.exports = update;
 
 }).call(this,require('_process'))
-},{"./Object.assign":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/Object.assign.js","./invariant":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/invariant.js","./keyOf":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/keyOf.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/warning.js":[function(require,module,exports){
+
+},{"./Object.assign":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/Object.assign.js","./invariant":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/invariant.js","./keyOf":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/keyOf.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/warning.js":[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2014, Facebook, Inc.
@@ -22376,311 +22550,8 @@ if ("production" !== process.env.NODE_ENV) {
 module.exports = warning;
 
 }).call(this,require('_process'))
-},{"./emptyFunction":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/emptyFunction.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react-tween-state/easingTypes.js":[function(require,module,exports){
-'use strict';
 
-var easingTypes = {
-  // t: current time, b: beginning value, c: change in value, d: duration
-
-  // new note: I much prefer specifying the final value rather than the change
-  // in value this is what the repo's interpolation plugin api will use. Here,
-  // c will stand for final value
-
-  linear: function(t, b, _c, d) {
-    var c = _c - b;
-    return t*c/d + b;
-  },
-  easeInQuad: function (t, b, _c, d) {
-    var c = _c - b;
-    return c*(t/=d)*t + b;
-  },
-  easeOutQuad: function (t, b, _c, d) {
-    var c = _c - b;
-    return -c *(t/=d)*(t-2) + b;
-  },
-  easeInOutQuad: function (t, b, _c, d) {
-    var c = _c - b;
-    if ((t/=d/2) < 1) return c/2*t*t + b;
-    return -c/2 * ((--t)*(t-2) - 1) + b;
-  },
-  easeInElastic: function (t, b, _c, d) {
-    var c = _c - b;
-    var s=1.70158;var p=0;var a=c;
-    if (t==0) return b;  if ((t/=d)==1) return b+c;  if (!p) p=d*.3;
-    if (a < Math.abs(c)) { a=c; var s=p/4; }
-    else var s = p/(2*Math.PI) * Math.asin (c/a);
-    return -(a*Math.pow(2,10*(t-=1)) * Math.sin( (t*d-s)*(2*Math.PI)/p )) + b;
-  },
-  easeOutElastic: function (t, b, _c, d) {
-    var c = _c - b;
-    var s=1.70158;var p=0;var a=c;
-    if (t==0) return b;  if ((t/=d)==1) return b+c;  if (!p) p=d*.3;
-    if (a < Math.abs(c)) { a=c; var s=p/4; }
-    else var s = p/(2*Math.PI) * Math.asin (c/a);
-    return a*Math.pow(2,-10*t) * Math.sin( (t*d-s)*(2*Math.PI)/p ) + c + b;
-  },
-  easeInOutElastic: function (t, b, _c, d) {
-    var c = _c - b;
-    var s=1.70158;var p=0;var a=c;
-    if (t==0) return b;  if ((t/=d/2)==2) return b+c;  if (!p) p=d*(.3*1.5);
-    if (a < Math.abs(c)) { a=c; var s=p/4; }
-    else var s = p/(2*Math.PI) * Math.asin (c/a);
-    if (t < 1) return -.5*(a*Math.pow(2,10*(t-=1)) * Math.sin( (t*d-s)*(2*Math.PI)/p )) + b;
-    return a*Math.pow(2,-10*(t-=1)) * Math.sin( (t*d-s)*(2*Math.PI)/p )*.5 + c + b;
-  },
-  easeInBack: function (t, b, _c, d, s) {
-    var c = _c - b;
-    if (s == undefined) s = 1.70158;
-    return c*(t/=d)*t*((s+1)*t - s) + b;
-  },
-  easeOutBack: function (t, b, _c, d, s) {
-    var c = _c - b;
-    if (s == undefined) s = 1.70158;
-    return c*((t=t/d-1)*t*((s+1)*t + s) + 1) + b;
-  },
-  easeInOutBack: function (t, b, _c, d, s) {
-    var c = _c - b;
-    if (s == undefined) s = 1.70158;
-    if ((t/=d/2) < 1) return c/2*(t*t*(((s*=(1.525))+1)*t - s)) + b;
-    return c/2*((t-=2)*t*(((s*=(1.525))+1)*t + s) + 2) + b;
-  },
-  easeInBounce: function (t, b, _c, d) {
-    var c = _c - b;
-    return c - easingTypes.easeOutBounce (d-t, 0, c, d) + b;
-  },
-  easeOutBounce: function (t, b, _c, d) {
-    var c = _c - b;
-    if ((t/=d) < (1/2.75)) {
-      return c*(7.5625*t*t) + b;
-    } else if (t < (2/2.75)) {
-      return c*(7.5625*(t-=(1.5/2.75))*t + .75) + b;
-    } else if (t < (2.5/2.75)) {
-      return c*(7.5625*(t-=(2.25/2.75))*t + .9375) + b;
-    } else {
-      return c*(7.5625*(t-=(2.625/2.75))*t + .984375) + b;
-    }
-  },
-  easeInOutBounce: function (t, b, _c, d) {
-    var c = _c - b;
-    if (t < d/2) return easingTypes.easeInBounce (t*2, 0, c, d) * .5 + b;
-    return easingTypes.easeOutBounce (t*2-d, 0, c, d) * .5 + c*.5 + b;
-  }
-};
-
-module.exports = easingTypes;
-
-/*
- *
- * TERMS OF USE - EASING EQUATIONS
- *
- * Open source under the BSD License.
- *
- * Copyright © 2001 Robert Penner
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted provided that the following conditions are met:
- *
- * Redistributions of source code must retain the above copyright notice, this list of
- * conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright notice, this list
- * of conditions and the following disclaimer in the documentation and/or other materials
- * provided with the distribution.
- *
- * Neither the name of the author nor the names of contributors may be used to endorse
- * or promote products derived from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
- * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
- *  COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
- *  EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
- *  GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
- * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
- *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
- * OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- */
-
-},{}],"/Users/contra/Projects/react-swipeable/node_modules/react-tween-state/index.js":[function(require,module,exports){
-'use strict';
-
-var easingTypes = require('./easingTypes');
-
-// additive is the new iOS 8 default. In most cases it simulates a physics-
-// looking overshoot behavior (especially with easeInOut. You can test that in
-// the example
-var DEFAULT_STACK_BEHAVIOR = 'ADDITIVE';
-var DEFAULT_EASING = easingTypes.easeInOutQuad;
-var DEFAULT_DURATION = 300;
-var DEFAULT_DELAY = 0;
-
-function shallowClone(obj) {
-  var ret = {};
-  for (var key in obj) {
-    if (!obj.hasOwnProperty(key)) {
-      continue;
-    }
-    ret[key] = obj[key];
-  }
-  return ret;
-}
-
-// see usage below
-function returnState(state) {
-  return state;
-}
-
-var tweenState = {
-  easingTypes: easingTypes,
-  stackBehavior: {
-    ADDITIVE: 'ADDITIVE',
-    DESTRUCTIVE: 'DESTRUCTIVE',
-  }
-};
-
-tweenState.Mixin = {
-  getInitialState: function() {
-    return {
-      tweenQueue: [],
-    };
-  },
-
-  tweenState: function(a, b, c) {
-    // tweenState(stateNameString, config)
-    // tweenState(stateRefFunc, stateNameString, config)
-
-    // passing a state name string and retrieving it later from this.state
-    // doesn't work for values in deeply nested collections (unless you design
-    // the API to be able to parse 'this.state.my.nested[1]', meh). Passing a
-    // direct, resolved reference wouldn't work either, since that reference
-    // points to the old state rather than the subsequent new ones.
-    if (typeof a === 'string') {
-      c = b;
-      b = a;
-      a = returnState;
-    }
-    this._tweenState(a, b, c);
-  },
-
-  _tweenState: function(stateRefFunc, stateName, config) {
-    config = shallowClone(config);
-
-    var state = this._pendingState || this.state;
-    var stateRef = stateRefFunc(state);
-
-    // see the reasoning for these defaults at the top
-    config.stackBehavior = config.stackBehavior || DEFAULT_STACK_BEHAVIOR;
-    config.easing = config.easing || DEFAULT_EASING;
-    config.duration = config.duration == null ? DEFAULT_DURATION : config.duration;
-    config.beginValue = config.beginValue == null ? stateRef[stateName] : config.beginValue;
-    config.delay = config.delay == null ? DEFAULT_DELAY : config.delay;
-
-    var newTweenQueue = state.tweenQueue;
-    if (config.stackBehavior === tweenState.stackBehavior.DESTRUCTIVE) {
-      newTweenQueue = state.tweenQueue.filter(function(item) {
-        return item.stateName !== stateName || item.stateRefFunc(state) !== stateRef;
-      });
-    }
-
-    newTweenQueue.push({
-      stateRefFunc: stateRefFunc,
-      stateName: stateName,
-      config: config,
-      initTime: Date.now() + config.delay,
-    });
-
-    // tweenState calls setState
-    // sorry for mutating. No idea where in the state the value is
-    stateRef[stateName] = config.endValue;
-    // this will also include the above update
-    this.setState({tweenQueue: newTweenQueue});
-
-    if (newTweenQueue.length === 1) {
-      this.startRaf();
-    }
-  },
-
-  getTweeningValue: function(a, b) {
-    // see tweenState API
-    if (typeof a === 'string') {
-      b = a;
-      a = returnState;
-    }
-    return this._getTweeningValue(a, b);
-  },
-
-  _getTweeningValue: function(stateRefFunc, stateName) {
-    var state = this.state;
-    var stateRef = stateRefFunc(state);
-    var tweeningValue = stateRef[stateName];
-    var now = Date.now();
-
-    for (var i = 0; i < state.tweenQueue.length; i++) {
-      var item = state.tweenQueue[i];
-      var itemStateRef = item.stateRefFunc(state);
-      if (item.stateName !== stateName || itemStateRef !== stateRef) {
-        continue;
-      }
-
-      var progressTime = now - item.initTime > item.config.duration ?
-        item.config.duration :
-        Math.max(0, now - item.initTime);
-      // `now - item.initTime` can be negative if initTime is scheduled in the
-      // future by a delay. In this case we take 0
-
-      var contrib = -item.config.endValue + item.config.easing(
-        progressTime,
-        item.config.beginValue,
-        item.config.endValue,
-        item.config.duration
-        // TODO: some funcs accept a 5th param
-      );
-      tweeningValue += contrib;
-    }
-
-    return tweeningValue;
-  },
-
-  _rafCb: function() {
-    if (!this.isMounted()) {
-      return;
-    }
-
-    var state = this.state;
-    if (state.tweenQueue.length === 0) {
-      return;
-    }
-
-    var now = Date.now();
-    state.tweenQueue.forEach(function(item) {
-      if (now - item.initTime >= item.config.duration) {
-        item.config.onEnd && item.config.onEnd();
-      }
-    });
-
-    var newTweenQueue = state.tweenQueue.filter(function(item) {
-      return now - item.initTime < item.config.duration;
-    });
-
-    this.setState({
-      tweenQueue: newTweenQueue,
-    });
-
-    requestAnimationFrame(this._rafCb);
-  },
-
-  startRaf: function() {
-    requestAnimationFrame(this._rafCb);
-  },
-
-};
-
-module.exports = tweenState;
-
-},{"./easingTypes":"/Users/contra/Projects/react-swipeable/node_modules/react-tween-state/easingTypes.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/lib/React.js":[function(require,module,exports){
-module.exports=require("/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/React.js")
-},{"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/React.js":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/node_modules/react/lib/React.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/react.js":[function(require,module,exports){
+},{"./emptyFunction":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/emptyFunction.js","_process":"/Users/contra/Projects/react-swipeable/node_modules/browserify/node_modules/process/browser.js"}],"/Users/contra/Projects/react-swipeable/node_modules/react/react.js":[function(require,module,exports){
 module.exports = require('./lib/React');
 
 },{"./lib/React":"/Users/contra/Projects/react-swipeable/node_modules/react/lib/React.js"}],"/Users/contra/Projects/react-swipeable/src/index.js":[function(require,module,exports){
@@ -22691,7 +22562,6 @@ var React = require('react');
 var events = require('add-event-listener');
 var tweenState = require('react-tween-state');
 var merge = require('lodash.merge');
-var clone = require('lodash.clone');
 var Draggable = React.createFactory(require('react-draggable'));
 
 function getRotationAngle(v, max, angle) {
@@ -22735,8 +22605,8 @@ var Swipeable = React.createClass({
         endValue: 0
       },
       completeAnimation: {
-        easing: tweenState.easingTypes.easeOutQuad,
-        duration: 750,
+        easing: tweenState.easingTypes.easeInQuad,
+        duration: 500,
         endValue: 0
       }
     };
@@ -22755,9 +22625,11 @@ var Swipeable = React.createClass({
     events.addEventListener(window, 'resize', this.setBreakPoint);
     this.setBreakPoint();
   },
-
   componentWillUnmount: function() {
     events.removeEventListener(window, 'resize', this.setBreakPoint);
+  },
+  componentDidUpdate: function(){
+    this.setBreakPoint();
   },
 
   setBreakPoint: function(){
@@ -22766,10 +22638,6 @@ var Swipeable = React.createClass({
     if (this.state.breakpoint !== breakpoint) {
       this.setState({breakpoint: breakpoint});
     }
-  },
-
-  componentDidUpdate: function(){
-    this.setBreakPoint();
   },
 
   handleDrag: function(event, ui){
@@ -22800,7 +22668,6 @@ var Swipeable = React.createClass({
       this.props.onDrag(event, ui);
     }
   },
-
   handleDragStop: function(event, ui){
     if (this.state.swiped) {
       return this.reset(false);
@@ -22827,18 +22694,27 @@ var Swipeable = React.createClass({
     }
   },
 
+  emulateSwipeRight: function(){
+    var movement = this.state.breakpoint*4;
+    this.refs.draggable.emulateDrag(movement, -movement);
+  },
+  emulateSwipeLeft: function(){
+    var movement = this.state.breakpoint*4;
+    this.refs.draggable.emulateDrag(-movement, -movement);
+  },
+
   reset: function(completed){
     var animation = completed ?
       this.props.completeAnimation :
       this.props.incompleteAnimation;
 
     if (animation) {
-      this.tweenState('rotation', clone(animation));
+      this.tweenState('rotation', animation);
     } else {
       this.setState({rotation: 0});
     }
 
-    this.refs.draggable.reset(clone(animation), clone(animation));
+    this.refs.draggable.reset(animation, animation);
   },
 
   render: function(){
@@ -22872,7 +22748,7 @@ var Swipeable = React.createClass({
 });
 
 module.exports = Swipeable;
-},{"add-event-listener":"/Users/contra/Projects/react-swipeable/node_modules/add-event-listener/index.js","lodash.clone":"/Users/contra/Projects/react-swipeable/node_modules/lodash.clone/index.js","lodash.merge":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/index.js","react":"/Users/contra/Projects/react-swipeable/node_modules/react/react.js","react-draggable":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/index.js","react-tween-state":"/Users/contra/Projects/react-swipeable/node_modules/react-tween-state/index.js"}]},{},["./samples/sandbox/src/index.js"])("./samples/sandbox/src/index.js")
+},{"add-event-listener":"/Users/contra/Projects/react-swipeable/node_modules/add-event-listener/index.js","lodash.merge":"/Users/contra/Projects/react-swipeable/node_modules/lodash.merge/index.js","react":"/Users/contra/Projects/react-swipeable/node_modules/react/react.js","react-draggable":"/Users/contra/Projects/react-swipeable/node_modules/react-draggable/index.js","react-tween-state":"/Users/contra/Projects/react-swipeable/node_modules/react-tween-state/index.js"}]},{},["./samples/sandbox/src/index.js"])("./samples/sandbox/src/index.js")
 });
 
 
