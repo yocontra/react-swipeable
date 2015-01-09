@@ -1,7 +1,7 @@
 {
   "name": "react-swipeable",
   "description": "Swipe right and swipe left with animations",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "homepage": "http://github.com/wearefractal/react-swipeable",
   "repository": {
     "type": "git",
